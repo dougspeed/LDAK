@@ -2,10 +2,11 @@
 
 | Useful References              |                                                                                             |
 | -------------------------- | ------------------------------------------------------------------------------------------- |
-| 📖 **[documentation]**    | The documentation of LDAK                              |
-
+| 📖 **[Documentation]**    | The documentation of LDAK                              |
+| 👩‍💻 **[Asking for help]** | How to ask for help with LDAK |
 
 [documentation]: https://dougspeed.com/ldak/
+[asking for help]: https://dougspeed.com/help/
 
 
 ## Updates
