@@ -12,7 +12,7 @@ Alternatively, you can install LDAK via conda, using the following command
 #command to come here
 ```
 
-The final option is to download the source code (from above), then compile LDAK yourself, using a command such as
+The final option is to compile LDAK yourself. You should first download the source code folder (either use git clone, or click on the green button that says "Code", then download zip). You can then compile LDAK using a command such as
 
 ```
 gcc -O3 -o ldak6 ldak.c libqsopt.linux.a -lblas -llapack -lm -lz -fopenmp
