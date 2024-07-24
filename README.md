@@ -1,6 +1,6 @@
 # Welcome to the GitHub pages for LDAK
 
-LDAK is our software for analyzing data from genome-wide association studies (GWAS).
+LDAK is our software for analyzing data from genome-wide association studies (GWAS). It includes state-of-the-art tools for association analysis, constructing prediction models and heritability analysis.
 
 # How to obtain LDAK
 
@@ -17,10 +17,10 @@ chmod a+x ldak6
 
 # LDAK documentation
 
-For advice on running LDAK-KVIK (our new tool for mixed-model association analysis), please visit www.ldak-kvik.com
+For advice on running LDAK-KVIK, please visit www.ldak-kvik.com
 
 For documentation on all other features of LDAK, please see www.dougspeed.com
 
 # Asking for help
 
-If you have problems running LDAK, we prefer if you open an issue at https://github.com/dougspeed/LDAK/issues. However, you can instead email Doug (doug <at> qgg <dot> au <dot> .dk).
+If you have problems running LDAK, we prefer if you open an issue at https://github.com/dougspeed/LDAK/issues. However, you can instead email doug <at> qgg <dot> au <dot> .dk.
