@@ -4,7 +4,9 @@ LDAK is our software for analyzing data from genome-wide association studies (GW
 
 # How to obtain LDAK
 
-You can download the LDAK executable by clicking on the file links above (this will open a new page, then you can click the download button on the right). If you plan to use LDAK on a Linux computer, please download the file ldak6.linux; if you plan to use LDAK on a MAC, please download the file ldak5.2.mac (we will soon release a MAC version of LDAK6). There is also a beta Linux version of LDAK, however, please only use this file if asked by me or Isabella.
+You can download the LDAK executable by clicking on one of the file links above (this will open a new page, then you can click the download button on the right).
+
+If you plan to run LDAK on a Linux computer, please download the file ldak6.linux; if you plan to run LDAK on a MAC, please download the file ldak5.2.mac (we will soon release a MAC version of LDAK6). Note that there is also a beta Linux version of LDAK, but please only use this version if asked.
 
 Alternatively, you can install LDAK via conda, using the following command
 
