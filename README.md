@@ -1,6 +1,6 @@
 # Welcome to the GitHub pages for LDAK
 
-LDAK is our software for analyzing data from genome-wide association studies (GWAS). It includes state-of-the-art tools for association analysis, constructing prediction models and heritability analysis.
+LDAK is our software for analyzing data from genome-wide association studies (GWAS). It includes state-of-the-art tools for association analysis, constructing prediction models and heritability analysis. 
 
 # How to obtain LDAK
 
