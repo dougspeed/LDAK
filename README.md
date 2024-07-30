@@ -44,4 +44,4 @@ If you have problems running LDAK, we prefer if you open an issue at https://git
 
 # Contributors
 
-These pages are maintained and developed by Doug Speed and Jasper Hof.
+These pages and the LDAK software are maintained and developed by Doug Speed and Jasper Hof.
