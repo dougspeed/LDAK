@@ -41,3 +41,7 @@ For documentation on all other features of LDAK, please see www.dougspeed.com
 # Asking for help
 
 If you have problems running LDAK, we prefer if you open an issue at https://github.com/dougspeed/LDAK/issues. However, you can instead email doug \<at\> qgg \<dot\> au \<dot\> .dk.
+
+# Contributors
+
+These pages are maintained and developed by Doug Speed and Jasper Hof.
