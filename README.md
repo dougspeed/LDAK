@@ -12,10 +12,10 @@ If you plan to run LDAK on a Linux computer, please download the file ldak6.linu
 wget https://github.com/dougspeed/LDAK/blob/main/ldak6.linux
 ```
 
-If you plan to run LDAK on a MAC, please download the file ldak5.2.mac; you can either click on the link, then find the download button, or you can use the following command
+If you plan to run LDAK on a MAC, please download the file ldak6.mac; you can either click on the link, then find the download button, or you can use the following command
 
 ```
-wget https://github.com/dougspeed/LDAK/blob/main/ldak5.2.mac
+wget https://github.com/dougspeed/LDAK/blob/main/ldak6.mac
 ```
 Note that there is also a beta Linux version of LDAK, but please only use this version if asked.
 
