@@ -6,10 +6,10 @@ LDAK is our software for analyzing data from genome-wide association studies (GW
 
 1 - The easiest way to obtain LDAK is by downloading the executable from the repository at the top of this page.
 
-If you plan to run LDAK on a Linux computer, please download the file ldak6.linux; you can either click on the link, then find the download button, or you can use the following command
+If you plan to run LDAK on a Linux computer, please download the file ldak6.1.linux; you can either click on the link, then find the download button, or you can use the following command
 
 ```
-wget https://github.com/dougspeed/LDAK/raw/refs/heads/main/ldak6.linux
+wget https://github.com/dougspeed/LDAK/blob/main/ldak6.1.linux
 ```
 
 If you plan to run LDAK on a MAC, please download the file ldak6.mac; you can either click on the link, then find the download button, or you can use the following command
@@ -28,8 +28,8 @@ Note that there is also a beta Linux version of LDAK, but please only use this v
 3 - The final option is to compile LDAK yourself. You should first download the source code from the repository at the top of this page (either use git clone, or press the green button that says "Code", then select "Download zip"). You can then compile LDAK using a command such as
 
 ```
-gcc -O3 -o ldak6 ldak.c libqsopt.linux.a -lblas -llapack -lm -lz -fopenmp
-chmod a+x ldak6
+gcc -O3 -o ldak6.1 ldak.c libqsopt.linux.a -lblas -llapack -lm -lz -fopenmp
+chmod a+x ldak6.1
 ```
 
 # LDAK documentation
