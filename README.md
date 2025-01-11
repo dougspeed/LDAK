@@ -9,7 +9,7 @@ LDAK is our software for analyzing data from genome-wide association studies (GW
 If you plan to run LDAK on a Linux computer, please download the file ldak6.1.linux; you can either click on the link, then find the download button, or you can use the following command
 
 ```
-wget https://github.com/dougspeed/LDAK/blob/main/ldak6.1.linux
+wget https://github.com/dougspeed/LDAK/raw/refs/heads/main/ldak6.1.linux
 ```
 
 If you plan to run LDAK on a MAC, please download the file ldak6.mac; you can either click on the link, then find the download button, or you can use the following command
