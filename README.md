@@ -22,7 +22,7 @@ Note that there is also a beta Linux version of LDAK, but please only use this v
 2 - Alternatively, you can install LDAK via conda, using the following command
 
 ```
-#command to come here
+conda install genomedk::ldak6
 ```
 
 3 - The final option is to compile LDAK yourself. You should first download the source code from the repository at the top of this page (either use git clone, or press the green button that says "Code", then select "Download zip"). You can then compile LDAK using a command such as
