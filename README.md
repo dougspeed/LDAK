@@ -15,7 +15,7 @@ wget https://github.com/dougspeed/LDAK/raw/refs/heads/main/ldak6.1.linux
 If you plan to run LDAK on a MAC, please download the file ldak6.mac; you can either click on the link, then find the download button, or you can use the following command
 
 ```
-wget https://github.com/dougspeed/LDAK/raw/refs/heads/main/ldak6.mac
+wget https://github.com/dougspeed/LDAK/raw/refs/heads/main/ldak6.1.mac
 ```
 Note that there is also a beta Linux version of LDAK, but please only use this version if asked.
 
