@@ -141,11 +141,11 @@ if(count==0)
 {printf("\nError, Column 3 of %s should contain genetic distances; either insert these or switch to physical distances (e.g,. replace \"--window-cm %.4f\" with \"--window-kb %.4f\")\n\n", bimfile, window_cm, window_cm*1000);exit(1);}
 }
 
-if(bcount>5){printf("In total %d predictors have chromosome values greater than 26\n", bcount);}
-if(mcount>5){printf("In total %d predictors have negative genetic distances\n", mcount);}
-if(ncount>5){printf("In total %d predictors have non-positive basepairs\n", ncount);}
-if(scount>5){printf("In total %d pairs of predictors have the same basepair\n", scount);}
-if(lcount>5){printf("In total %d predictors have multi-character alleles\n", lcount);}
+if(bcount>5){printf("In total, %d predictors have chromosome values greater than 26\n", bcount);}
+if(mcount>5){printf("In total, %d predictors have negative genetic distances\n", mcount);}
+if(ncount>5){printf("In total, %d predictors have non-positive basepairs\n", ncount);}
+if(scount>5){printf("In total, %d pairs of predictors have the same basepair\n", scount);}
+if(lcount>5){printf("In total, %d predictors have multi-character alleles\n", lcount);}
 //if(bcount+mcount+ncount+scount+lcount>0){printf("\n");}
 
 free(rc);free(rs);free(rm);free(rbp);free(ra1);free(ra2);
@@ -380,11 +380,11 @@ bgen_indexes[length]=ftello(input);
 
 fclose(input);
 
-if(bcount>5){printf("In total %d predictors have chromosome values greater than 26\n", bcount);}
-if(ncount>5){printf("In total %d predictors have non-positive basepairs\n", ncount);}
-if(scount>5){printf("In total %d pairs of predictors have the same basepair\n", scount);}
-if(tcount>5){printf("In total %d predictors do not have exactly two alleles\n", lcount);}
-if(lcount>5){printf("In total %d predictors have multi-character alleles\n", lcount);}
+if(bcount>5){printf("In total, %d predictors have chromosome values greater than 26\n", bcount);}
+if(ncount>5){printf("In total, %d predictors have non-positive basepairs\n", ncount);}
+if(scount>5){printf("In total, %d pairs of predictors have the same basepair\n", scount);}
+if(tcount>5){printf("In total, %d predictors do not have exactly two alleles\n", lcount);}
+if(lcount>5){printf("In total, %d predictors have multi-character alleles\n", lcount);}
 //if(bcount+mcount+ncount+scount+lcount>0){printf("\n");}
 
 free(rc);free(rs);free(ra1);free(ra2);free(rr);
@@ -501,9 +501,9 @@ gzclose(inputgz);
 
 if(j<=maxpreds)
 {
-if(ncount>5){printf("In total %d predictors have non-positive basepairs\n", ncount);}
-if(scount>5){printf("In total %d pairs of predictors have the same basepair\n", scount);}
-if(lcount>5){printf("In total %d predictors have multi-character alleles\n", lcount);}
+if(ncount>5){printf("In total, %d predictors have non-positive basepairs\n", ncount);}
+if(scount>5){printf("In total, %d pairs of predictors have the same basepair\n", scount);}
+if(lcount>5){printf("In total, %d predictors have multi-character alleles\n", lcount);}
 }
 
 free(rs);free(rs2);free(rbp);free(ra1);free(ra2);free(gzbuffer);
@@ -679,7 +679,7 @@ void read_sumsfile(char *sumsfile, double *nss, double *chis, double *rhos, doub
 //type=0 - normal, type=1 - sum-hers or sum-cors with plet=1, type=2 - sum-cors with plet=0
 //for types 0 and 2, need signed statistics, for 1 unsigned
 //for type 0, must have all predictions; for types 1 and 2, not required when checksums=0
-int j, j2, j3, k, count, count2, count3, flag, ccount, acount, pcount;
+int j, j2, j3, k, count, count2, count3, found, flag, ccount, acount, pcount, lcount;
 double value, value2;
 
 int cols[7], zsp, *indexer, *indexer2;
@@ -773,6 +773,7 @@ if((input=fopen(sumsfile,"r"))==NULL)
 {printf("Error opening %s\n\n", sumsfile);exit(1);}
 readchar=0;while(readchar!=10){readchar=10;(void)fscanf(input, "%c", &readchar);}
 
+found=0;lcount=0;
 for(j=0;j<count;j++)
 {
 for(k=0;k<count2;k++)
@@ -783,95 +784,105 @@ if(strlen(rs)>500){free(readlist[k]);copy_string(readlist,k,rs);}
 else{strcpy(readlist[k],rs);}
 }
 
-if(strlen(readlist[cols[1]])+strlen(readlist[cols[2]])>2)
-{printf("Error, Predictor %s has alleles %s and %s (both alleles must be single characters)\n\n", readlist[cols[0]], readlist[cols[1]], readlist[cols[2]]);exit(1);}
-
+if(strlen(readlist[cols[1]])+strlen(readlist[cols[2]])>2)	//long alleles - ignore
+{
+if(lcount<5){printf("Warning, Predictor %s has multi-character alleles (%s and %s) so will be ignored\n", readlist[cols[0]], readlist[cols[1]], readlist[cols[2]]);}
+lcount++;
+}
+else
+{
 if(strcmp(readlist[cols[1]],readlist[cols[2]])==0)
 {printf("Error, the two alleles for Predictor %s are the same (%s)\n\n", readlist[cols[0]], readlist[cols[1]]);exit(1);}
 
 //copy in names and alleles
-copy_string(gotpreds,j,readlist[cols[0]]);
-gotal1[j]=readlist[cols[1]][0];
-gotal2[j]=readlist[cols[2]][0];
+copy_string(gotpreds,found,readlist[cols[0]]);
+gotal1[found]=readlist[cols[1]][0];
+gotal2[found]=readlist[cols[2]][0];
 
 if(zsp==1)	//using Z
 {
 if(strcmp(readlist[cols[3]],"NA")==0)
-{printf("Error, the Z statistic for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the Z statistic for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[3]], "%lf%c", &value, &readchar)!=1)
-{printf("Error, the Z statistic for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[3]]);exit(1);}
-chisb[j]=pow(value,2);
+{printf("Error, the Z statistic for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[3]]);exit(1);}
+chisb[found]=pow(value,2);
 }
 if(zsp==2)	//using Stat
 {
 if(strcmp(readlist[cols[3]],"NA")==0)
-{printf("Error, the Chi-Squared statistic for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the Chi-Squared statistic for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[3]], "%lf%c", &value, &readchar)!=1)
-{printf("Error, the Chi-Squared statistic for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[3]]);exit(1);}
-if(value<0){printf("Error, the chi-squared statistic for Predictor %s should be non-negative (not %s); make sure %s provides chi-squared test statistics (not Z statistics)\n\n", gotpreds[j], readlist[cols[3]], sumsfile);exit(1);}
-chisb[j]=value;
+{printf("Error, the Chi-Squared statistic for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[3]]);exit(1);}
+if(value<0){printf("Error, the chi-squared statistic for Predictor %s should be non-negative (not %s); make sure %s provides chi-squared test statistics (not Z statistics)\n\n", gotpreds[found], readlist[cols[3]], sumsfile);exit(1);}
+chisb[found]=value;
 }
 if(zsp==3)	//using P
 {
 if(strcmp(readlist[cols[3]],"NA")==0)
-{printf("Error, the p-value for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the p-value for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[3]], "%lf%c", &value, &readchar)!=1)
-{printf("Error, the p-value for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[3]]);exit(1);}
+{printf("Error, the p-value for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[3]]);exit(1);}
 if(value<0||value>1)
-{printf("Error, the p-value for Predictor %s should be within [0,1] (not %s)\n\n", gotpreds[j], readlist[cols[3]]);exit(1);}
-if(value<1e-300){chisb[j]=-1;}	//will warn below if predictor used
-else{chisb[j]=pow(normal_inv(value/2),2);}
+{printf("Error, the p-value for Predictor %s should be within [0,1] (not %s)\n\n", gotpreds[found], readlist[cols[3]]);exit(1);}
+if(value<1e-300){chisb[found]=-1;}	//will warn below if predictor used
+else{chisb[found]=pow(normal_inv(value/2),2);}
 }
 if(zsp==4)	//COJO or PRS-CS (using Effect and SE)
 {
 if(strcmp(readlist[cols[5]],"NA")==0)
-{printf("Error, the effect size for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the effect size for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[5]], "%lf%c", &value, &readchar)!=1)
-{printf("Error, the effect size for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[5]]);exit(1);}
+{printf("Error, the effect size for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[5]]);exit(1);}
 
 if(strcmp(readlist[cols[3]],"NA")==0)
-{printf("Error, the standard error for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the standard error for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[3]], "%lf%c", &value2, &readchar)!=1)
-{printf("Error, the standard error for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[3]]);exit(1);}
-if(value2<=0){printf("Error, the standard error for Predictor %s should be positive (not %s)\n\n", gotpreds[j], rs);exit(1);}
+{printf("Error, the standard error for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[3]]);exit(1);}
+if(value2<=0){printf("Error, the standard error for Predictor %s should be positive (not %s)\n\n", gotpreds[found], rs);exit(1);}
 
-chisb[j]=pow(value/value2,2);
+chisb[found]=pow(value/value2,2);
 }
 
 if(fixn==-9999)
 {
 if(strcmp(readlist[cols[4]],"NA")==0)
-{printf("Error, the sample size for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the sample size for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[4]], "%lf%c", &value, &readchar)!=1)
-{printf("Error, the sample size for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[4]]);exit(1);}
-if(value<0.5){printf("Error, Predictor %s has non-positive sample size (%s)\n\n", gotpreds[j], readlist[cols[4]]);exit(1);}
-nssb[j]=value;
+{printf("Error, the sample size for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[4]]);exit(1);}
+if(value<0.5){printf("Error, Predictor %s has non-positive sample size (%s)\n\n", gotpreds[found], readlist[cols[4]]);exit(1);}
+nssb[found]=value;
 }
-else{nssb[j]=fixn;}
+else{nssb[found]=fixn;}
 
 if(type==0||type==2)	//need signs
 {
 if(strcmp(readlist[cols[5]],"NA")==0)
-{printf("Error, the direction for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the direction for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[5]], "%lf%c", &value, &readchar)!=1)
-{printf("Error, the direction for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[5]]);exit(1);}
-if(value>=0){signsb[j]=1;}
-else{signsb[j]=-1;}
+{printf("Error, the direction for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[5]]);exit(1);}
+if(value>=0){signsb[found]=1;}
+else{signsb[found]=-1;}
 }
-else{signsb[j]=1;}
+else{signsb[found]=1;}
 
 if(cols[6]!=-9999)	//get frequency
 {
 if(strcmp(readlist[cols[6]],"NA")==0)
-{printf("Error, the A1 frequency for Predictor %s is NA\n\n", gotpreds[j]);exit(1);}
+{printf("Error, the A1 frequency for Predictor %s is NA\n\n", gotpreds[found]);exit(1);}
 if(sscanf(readlist[cols[6]], "%lf%c", &value, &readchar)!=1)
-{printf("Error, the A1 frequency for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[j], readlist[cols[6]]);exit(1);}
+{printf("Error, the A1 frequency for Predictor %s does not appear to be numeric (%s)\n\n", gotpreds[found], readlist[cols[6]]);exit(1);}
 if(value<0||value>1)
-{printf("Error, the A1 frequency for Predictor %s should be within [0,1] (not %s)\n\n", gotpreds[j], readlist[cols[6]]);exit(1);}
-a1freqb[j]=value;
+{printf("Error, the A1 frequency for Predictor %s should be within [0,1] (not %s)\n\n", gotpreds[found], readlist[cols[6]]);exit(1);}
+a1freqb[found]=value;
 }
-else{a1freqb[j]=-9999;}
+else{a1freqb[found]=-9999;}
+
+found++;
+}
 }	//end of j loop
+if(lcount>5){printf("In total, %d predictors have multi-character alleles\n\n", lcount);}
+
+if(found==0){printf("Error, there were no predictors with single-character alleles\n\n");exit(1);}
 
 fclose(input);
 
@@ -882,7 +893,7 @@ for(j=0;j<count2;j++){free(readlist[j]);}free(readlist);
 //line up
 indexer=malloc(sizeof(int)*length);
 indexer2=malloc(sizeof(int)*length);
-count2=find_strings(preds, length, gotpreds, count, indexer, indexer2, NULL, sumsfile, NULL, NULL, 3);
+count2=find_strings(preds, length, gotpreds, found, indexer, indexer2, NULL, sumsfile, NULL, NULL, 3);
 
 //load up, keeping track of consistent, ambiguous, and (if used) zero pvalues
 for(j=0;j<length;j++){nss[j]=-9999;chis[j]=-9999;rhos[j]=-9999;}
@@ -945,7 +956,7 @@ if(acount>5){printf("In total, %d predictors have ambiguous alleles\n", acount);
 if(acount>0){printf("If you are confident that ambiguous predictors are correctly oriented, you can retain them by adding \"--allow-ambiguous YES\"\n");}
 }
 if(amb==1&&acount>0){printf("In total, %d predictors have ambiguous alleles\n", acount);}
-if(pcount>5){printf("In total %d predictors have p-value zero\n", pcount);}
+if(pcount>5){printf("In total, %d predictors have p-value zero\n", pcount);}
 
 if(count3==0){printf("\nError, %s contains summary statistics for none of the %d predictors\n\n", sumsfile, length);exit(1);}
 if(count3<length)
@@ -960,7 +971,7 @@ printf("Warning, %s contains summary statistics for only %d of the %d predictors
 }
 else{printf("Have found summary statistics for all %d predictors\n", length);}
 
-for(j=0;j<count;j++){free(gotpreds[j]);}free(gotpreds);
+for(j=0;j<found;j++){free(gotpreds[j]);}free(gotpreds);
 free(gotal1);free(gotal2);free(nssb);free(signsb);free(chisb);free(a1freqb);
 free(indexer);free(indexer2);
 
@@ -1318,8 +1329,8 @@ if(gchr[j]==gchr[j-1]&&gbp1[j]<gbp1[j-1])
 }	//end of j loop
 fclose(input);
 
-if(bcount>5){printf("In total %d genes have chromosome values greater than 26\n", bcount);}
-if(zcount>5){printf("In total %d genes have length one\n", zcount);}
+if(bcount>5){printf("In total, %d genes have chromosome values greater than 26\n", bcount);}
+if(zcount>5){printf("In total, %d genes have length one\n", zcount);}
 if(bcount+zcount>0){printf("\n");}
 
 free(rs);free(rc);free(rbp1);free(rbp2);
@@ -2686,9 +2697,9 @@ free(indexer);
 
 ///////////////////////////
 
-int get_effects(double **effects, double bivar, int *keeppreds_use, int num_phenos, int num_causals, char *probsfile, char *causalsfile, char *effectsfile, int num_preds_use, int *keeppreds, int num_preds, char **allpreds, int *predorder)
+int get_effects(double **effects, double bivar, double bivar3, int *keeppreds_use, int num_phenos, int num_causals, char *probsfile, char *causalsfile, char *effectsfile, int num_preds_use, int *keeppreds, int num_preds, char **allpreds, int *predorder)
 {
-int j, m, pick, count;
+int j, m, pick, count, count2, count3;
 int **causals, *order, *usedpreds, *revs;
 double unifrand, value, value2, *probs, *cums, mat[4], mat2[2];
 
@@ -2738,8 +2749,6 @@ for(j=0;j<num_preds_use;j++){order[j]=j;}
 for(m=0;m<num_phenos;m++)
 {
 permute_int(order,num_preds_use);
-//tweaked here for correlated effects
-//qsort(order, num_causals, sizeof(int), compare_int);
 for(j=0;j<num_causals;j++){causals[m][j]=keeppreds[order[j]];}
 }
 free(order);
@@ -2767,18 +2776,54 @@ causals[m][j]=keeppreds[pick];
 }
 }
 
-if(bivar!=-9999)	//must ensure pairs of causals are the same
+if(bivar!=-9999)	//must ensure causals for even phenotypes match those for odd phenotypes
 {
 for(m=0;m<num_phenos/2;m++)
 {
 for(j=0;j<num_causals;j++){causals[m*2+1][j]=causals[m*2][j];}
 }
 }
+
+if(bivar3!=-9999)	//must ensure correct overlap of causals
+{
+usedpreds=malloc(sizeof(int)*num_preds);
+
+for(m=0;m<num_phenos/2;m++)
+{
+//what is current overlap
+for(j=0;j<num_preds;j++){usedpreds[j]=0;}
+for(j=0;j<num_causals;j++){usedpreds[causals[m*2][j]]++;}
+for(j=0;j<num_causals;j++){usedpreds[causals[m*2+1][j]]+=2;}
+count=0;for(j=0;j<num_preds;j++){count+=(usedpreds[j]==3);}
+
+//must get count2 more overlaps
+count2=bivar3*num_causals-count;
+
+if(count2>0)
+{
+//count3 indexes next snp in m*2 but not in m*2+1
+count3=0;while(usedpreds[causals[m*2][count3]]!=1){count3++;}
+
+for(j=0;j<num_causals;j++)
+{
+if(usedpreds[causals[m*2+1][j]]!=3)
+{
+causals[m*2+1][j]=causals[m*2][count3];
+count2--;
+if(count2==0){break;}
+count3++;while(usedpreds[causals[m*2][count3]]!=1){count3++;}
+}
+}
+}
+}
+free(usedpreds);
+}
 }
 
 //work out which used
-usedpreds=malloc(sizeof(int)*num_preds);
 revs=malloc(sizeof(int)*num_preds);
+
+usedpreds=malloc(sizeof(int)*num_preds);
 for(j=0;j<num_preds;j++){usedpreds[j]=0;}
 for(m=0;m<num_phenos;m++)
 {
@@ -2790,6 +2835,7 @@ for(j=0;j<num_preds;j++)
 {
 if(usedpreds[j]>0){keeppreds_use[count]=j;revs[j]=count;count++;}
 }
+free(usedpreds);
 
 ////////
 
@@ -2800,7 +2846,7 @@ effects[m]=malloc(sizeof(double)*count);
 for(j=0;j<count;j++){effects[m][j]=0;}
 }
 
-if(strcmp(effectsfile,"blank")!=0)	//read in 
+if(strcmp(effectsfile,"blank")!=0)	//read in (will not have bivar)
 {
 if((input=fopen(effectsfile,"r"))==NULL)
 {printf("Error opening %s\n\n", effectsfile);exit(1);}
@@ -2814,7 +2860,7 @@ if(fscanf(input, "%lf ", effects[m]+revs[causals[m][j]])!=1)
 }
 fclose(input);
 }
-else	//pick at random
+else	//pick at random - might have bivar or bivar3 (but not both)
 {
 if(bivar==-9999)	//effects independent
 {
@@ -2823,8 +2869,6 @@ for(m=0;m<num_phenos;m++)
 for(j=0;j<num_causals;j++)
 {
 effects[m][revs[causals[m][j]]]=rnorm_safe();
-//tweaked here for correlated effects
-//if(j%2==1){effects[m][revs[causals[m][j]]]=effects[m][revs[causals[m][j-1]]];}
 }
 }
 }
@@ -2850,10 +2894,31 @@ effects[m*2+1][revs[causals[m*2+1][j]]]=mat[1]*value+mat[3]*value2;
 }
 }
 }	//end of bivar!=-9999
+
+if(bivar3!=-9999)	//ensure effects of overlapping causals match
+{
+usedpreds=malloc(sizeof(int)*num_preds);
+
+for(m=0;m<num_phenos/2;m++)
+{
+for(j=0;j<num_preds;j++){usedpreds[j]=-1;}
+for(j=0;j<num_causals;j++){usedpreds[causals[m*2][j]]=j;}
+
+for(j=0;j<num_causals;j++)
+{
+if(usedpreds[causals[m*2+1][j]]!=-1)	//overlapping snp
+{
+effects[m*2+1][revs[causals[m*2+1][j]]]=effects[m*2][revs[causals[m*2][usedpreds[causals[m*2+1][j]]]]];
+}
+}
+}
+
+free(usedpreds);
+}
 }	//end of picking at random
 
 for(m=0;m<num_phenos;m++){free(causals[m]);}free(causals);
-free(usedpreds);free(revs);
+free(revs);
 
 return(count);
 }	//end of get_effects
@@ -3029,6 +3094,70 @@ free(usedpreds);
 
 return(addpart);
 }	//end of get_her_model
+
+///////////////////////////
+
+void read_covar_prs(char *povarfile, double *covprs, int ns, char **ids3, int num_prs,  int num_chr)
+{
+int i, j, k, count, count2, found;
+int *indexer, *indexer2;
+
+double readdouble;
+char readchar, readstring[500], **wantids;
+
+FILE *input;
+
+
+//check all individuals are available
+count=countrows(povarfile)-1;
+printf("Reading covariate PRS for %d samples from %s\n", count, povarfile);
+
+wantids=malloc(sizeof(char*)*count);
+read_ids(povarfile, NULL, NULL, wantids, count, NULL, 1, 0);
+
+indexer=malloc(sizeof(int)*count);
+indexer2=malloc(sizeof(int)*count);
+count2=find_strings(wantids, count, ids3, ns, indexer, indexer2, povarfile, NULL, NULL, NULL, 3);
+if(count2==0){printf("Error, %s does not contain covariate PRS for any of the %d samples\n\n", povarfile, ns);exit(1);}
+if(count2<ns){printf("Error, %s contains covariate PRS for only %d of the %d samples\n\n", povarfile, count2, ns);exit(1);}
+
+//open file and skip header
+if((input=fopen(povarfile,"r"))==NULL)
+{printf("Error opening %s\n\n",povarfile);exit(1);}
+readchar=0;while(readchar!=10){readchar=10;(void)fscanf(input, "%c", &readchar);}
+
+found=0;
+for(i=0;i<count;i++)
+{
+if(indexer[found]==i)	//will be using this row
+{
+//skip ids
+if(fscanf(input, "%s %s ", readstring, readstring)!=2)
+{printf("Error reading the first two elements of Row %d of %s\n\n", i+2, povarfile);exit(1);}
+
+for(j=0;j<num_prs;j++)
+{
+for(k=0;k<1+num_chr;k++)
+{
+if(fscanf(input, "%lf ", covprs+(size_t)(j+k*num_prs)*ns+indexer2[found])!=1)
+{printf("Error reading Row %d of %s\n\n", i+2, povarfile);exit(1);}
+}
+}
+
+found++;
+if(found==ns){break;}
+}
+else	//skip this row
+{
+readchar=0;while(readchar!=10){readchar=10;(void)fscanf(input, "%c", &readchar);}
+}
+}
+
+fclose(input);
+
+for(i=0;i<count;i++){free(wantids[i]);}free(wantids);
+free(indexer);free(indexer2);
+}
 
 ///////////////////////////
 

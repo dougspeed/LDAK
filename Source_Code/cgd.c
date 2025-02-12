@@ -16,7 +16,7 @@ Copyright 2024 Doug Speed.
 
 ///////////////////////////
 
-void sparse_cgd(int ns, int total, int num_rels, int *firsts, int *seconds, double *kinships, double *cX, double *cR, int num_resps_use, double *pedhers, double *Yadj, int dichot, double *nullweights, int num_fixed, double *Z, int type, double tol, double her, double *polates, int nmcmc, double *gaussian, int ncal, double *cdata, double *cmults, double *pedgammas, double *pedsds)
+void sparse_cgd(int ns, int total, int num_rels, int *firsts, int *seconds, double *kinships, double *cX, double *cR, int num_resps_use, double *pedhers, double *Yadj, int dichot, double *nullweights, int type, double tol, double her, double *polates, int nmcmc, double *gaussian, int ncal, double *cdata, double *cmults, double *pedgammas, double *pedsds)
 //type=0 - standard, type=1 - MC REML, type=2 - invV and lambda
 {
 int i, j, g, m, p, p2, count, count2, cflag, cflag2;
@@ -87,7 +87,7 @@ fractions[p]=mean*pedhers[m]/(1-pedhers[m]);
 }
 }
 
-//see if necessary to update residuals
+//see if necessary to update residuals (only required if starting values in cX are not zero)
 for(p=0;p<total;p++)
 {
 count=0;for(i=0;i<ns;i++){count+=(cX[(size_t)p*ns+i]!=0);}

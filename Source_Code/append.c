@@ -114,12 +114,14 @@ if(append_check(sums2file,sums2file2,workdir)!=0)
 
 if(append_check(covarfile,covarfile2,workdir)!=0)
 {printf("Error reading covariates file %s; check file exists and is not empty\n\n", covarfile);exit(1);}
-if(append_check(topfile,topfile2,workdir)!=0)
-{printf("Error reading top predictors file %s; check file exists and is not empty\n\n", topfile);exit(1);}
 if(append_check(envfile,envfile2,workdir)!=0)
 {printf("Error reading environmental variables file %s; check file exists and is not empty\n\n", envfile);exit(1);}
+if(append_check(topfile,topfile2,workdir)!=0)
+{printf("Error reading top predictors file %s; check file exists and is not empty\n\n", topfile);exit(1);}
 if(append_check(factorfile,factorfile2,workdir)!=0)
 {printf("Error reading factor file %s; check file exists and is not empty\n\n", factorfile);exit(1);}
+if(append_check(povarfile,povarfile2,workdir)!=0)
+{printf("Error reading covariate PRS file %s; check file exists and is not empty\n\n", povarfile);exit(1);}
 
 if(append_check(offsetfile,offsetfile2,workdir)!=0)
 {printf("Error reading offset file %s; check file exists and is not empty\n\n", offsetfile);exit(1);}
@@ -164,6 +166,11 @@ if(append_check(relfile,relfile2,workdir)!=0)
 
 if(append_check(sampwfile,sampwfile2,workdir)!=0)
 {printf("Error reading sample weights file %s; check file exists and is not empty\n\n", sampwfile);exit(1);}
+
+if(append_check(transfile,transfile2,workdir)!=0)
+{printf("Error reading transformation inverse file %s; check file exists and is not empty\n\n", transfile);exit(1);}
+
+////////
 
 if(append_check(genefile,genefile2,workdir)!=0)
 {printf("Error reading gene annotations file %s; check file exists and is not empty\n\n", genefile);exit(1);}

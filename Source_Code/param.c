@@ -1396,8 +1396,6 @@ else{print_scaling(power,hwestand);}
 if(strcmp(respfile,"blank")==0&&strcmp(sumsfile,"blank")==0)
 {printf("If you add \"--pheno\" (or \"--summary\"), LDAK will compute the correlation between scores and the phenotype\n\n");}
 
-if(strcmp(covarfile,"blank")==0){printf("Consider using \"--covar\" to provide quantitative covariates\n\n");}
-
 if(prsvar==0&&savecounts==0){printf("If you require counts (how many predictors contribute to each profile) add \"--save-counts\"\n\n");}
 }
 

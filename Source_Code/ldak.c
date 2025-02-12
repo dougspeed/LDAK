@@ -519,7 +519,7 @@ if(strcmp(factorfile,"blank")!=0){printf("Should one or more factors instead be 
 }
 
 //get total number of fixed effects
-num_fixed=num_covars+num_envs+num_tops;
+num_fixed=num_covars+num_envs+num_tops+num_prs;
 
 covar=malloc(sizeof(double)*num_samples_use*num_fixed);
 
@@ -890,7 +890,7 @@ fclose(output);
 //save original bitsize
 bitsize2=bitsize;
 
-if(bitsize==-9999){bitsize=2048;}
+if(bitsize==-9999){bitsize=2000;}
 
 //allocate variables
 data_warn2(bitsize,num_samples_use);
@@ -1448,6 +1448,22 @@ for(i=0;i<indcount;i++){free(ids4[i]);}free(ids4);
 }
 
 ///////////////////////////
+
+if(num_prs>0)	//check all chr covered
+{
+usedpreds=malloc(sizeof(int)*(chrindex3[num_chr3-1]+1));
+for(j=0;j<chrindex3[num_chr3-1]+1;j++){usedpreds[j]=0;}
+for(j=0;j<num_chr3;j++){usedpreds[chrindex3[j]]=1;}
+
+for(j=0;j<data_length;j++)
+{
+if(chr[j]>chrindex3[num_chr3-1])
+{printf("Error, will be analyzing predictors on Chromosome %d, but this chromosome was not included when making the covariate PRS\n\n", chr[j]);exit(1);}
+if(usedpreds[chr[j]]==0)
+{printf("Error, will be analyzing predictors on Chromosome %d, but this chromosome was not included when making the covariate PRS\n\n", chr[j]);exit(1);}
+}
+free(usedpreds);
+}
 
 if(mode==131)	//linear (num_kins will be 0 or 1)
 {
@@ -2797,6 +2813,8 @@ if(mode==229||mode==230){free(keepresps2);free(resp2);free(respcounts2);}
 //more allocations from parsefiles.c
 
 if(strcmp(covarfile,"blank")!=0){free(keepcovars);}
+
+if(strcmp(povarfile,"blank")!=0){free(chrindex3);}
 
 if(strcmp(oversfile,"blank")!=0)
 {

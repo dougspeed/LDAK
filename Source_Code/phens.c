@@ -111,6 +111,8 @@ printf("\n");
 
 //have breeding values, now add noise
 
+if(bivar2==-9999)	//do for one trait at a time
+{
 for(m=0;m<num_phenos;m++)
 {
 //work out how much noise to add
@@ -130,8 +132,63 @@ else{value=pow(var*(1-her)/her,.5);}
 
 //add on noise
 for(i=0;i<num_samples_use;i++){phens[m][i]=unders[m][i]+rnorm_safe()*value;}
+}
+}
+else	//jointly sample noise for pairs of traits
+{
+//get "cholesky"
+if(bivar2==-1){mat[0]=1;mat[1]=-1;mat[2]=0;mat[3]=0;}
+if(bivar2==1){mat[0]=1;mat[1]=1;mat[2]=0;mat[3]=0;}
+if(bivar2!=-1&&bivar2!=1)	
+{
+mat[0]=1;mat[1]=bivar2;mat[2]=bivar2;mat[3]=1;
+eigen_invert(mat, 2, mat2, 0, NULL, 0);
+}
 
-//will scale everything so variance is one
+for(m=0;m<num_phenos/2;m++)
+{
+//work out how much noise to add for first in pair
+sum=0;sumsq=0;
+for(i=0;i<num_samples_use;i++){sum+=unders[m*2][i];sumsq+=pow(unders[m*2][i],2);}
+mean=sum/num_samples_use;
+var=sumsq/num_samples_use-pow(mean,2);
+if(var==0&&her!=0)
+{
+printf("Error, phenotype %d has variance zero, indicating that all its causal predictors are trivial", 2*m+1);
+if(strcmp(weightsfile,"blank")!=0){printf(" or have weight zero");}
+printf("\n\n");exit(1);
+}
+
+if(her==0){value=1;}
+else{value=pow(var*(1-her)/her,.5);}
+
+//and now for second in pair
+sum2=0;sumsq2=0;
+for(i=0;i<num_samples_use;i++){sum2+=unders[m*2+1][i];sumsq2+=pow(unders[m*2+1][i],2);}
+mean2=sum/num_samples_use;
+var2=sumsq2/num_samples_use-pow(mean2,2);
+if(var2==0&&her!=0)
+{
+printf("Error, phenotype %d has variance zero, indicating that all its causal predictors are trivial", 2*m+2);
+if(strcmp(weightsfile,"blank")!=0){printf(" or have weight zero");}
+printf("\n\n");exit(1);
+}
+
+if(her==0){value2=1;}
+else{value2=pow(var2*(1-her)/her,.5);}
+
+for(i=0;i<num_samples_use;i++)
+{
+value3=rnorm_safe();
+value4=rnorm_safe();
+phens[m*2][i]=unders[m*2][i]+(mat[0]*value3+mat[2]*value4)*value;
+phens[m*2+1][i]=unders[m*2+1][i]+(mat[1]*value3+mat[3]*value4)*value2;
+}
+}
+}
+
+for(m=0;m<num_phenos;m++)	//will scale everything so variance is one
+{
 sum=0;sumsq=0;
 for(i=0;i<num_samples_use;i++){sum+=phens[m][i];sumsq+=pow(phens[m][i],2);}
 mean=sum/num_samples_use;

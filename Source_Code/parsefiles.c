@@ -280,7 +280,7 @@ if((mode==151||mode==152||mode==153||mode==154)&&dtype==4)
 {
 if((input=fopen(datafile,"rb"))==NULL)
 {printf("Error opening %s\n\n",datafile);exit(1);}
-if(read_speed_size(filename)==2)
+if(read_speed_size(datafile)==2)
 {printf("Error, you can not use long SPEED format with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\" (when you make %s, you should not add \"--speed-long YES\")\n\n", datafile);exit(1);}
 fclose(input);
 }
@@ -902,18 +902,81 @@ if(strcmp(topfile,"blank")!=0)	//have top preds
 else
 {num_tops=0;}
 
-if(strcmp(offsetfile,"blank")!=0)	//have offsets
-{
-count=countcols(offsetfile);
-if(count!=3){printf("Error, %s should have three columns (not %d)\n\n", offsetfile, count);exit(1);}
-checkcols(offsetfile,count);
-}
-
 if(strcmp(factorfile,"blank")!=0)	//have factors
 {
 count=countcols(factorfile);
 if(count<3){printf("Error, %s should have at least three columns (not %d)\n\n", factorfile, count);exit(1);}
 checkcols(factorfile,count);
+}
+
+if(strcmp(povarfile,"blank")!=0)	//have prs covar
+{
+count=countcols(povarfile);
+if(count<4){printf("Error, %s should have at least four columns (not %d)\n\n", povarfile, count);exit(1);}
+checkcols(povarfile,count);
+
+//how many times does profile appear in top row
+if((input=fopen(povarfile,"r"))==NULL)
+{printf("Error opening %s\n\n",povarfile);exit(1);}
+
+num_prs=0;
+for(j=0;j<count;j++)
+{
+if(fscanf(input, "%s ", readstring)!=1)
+{printf("Error reading Element %d of %s\n\n", j+1, povarfile);exit(1);}
+num_prs+=(strcmp(readstring,"Profile")==0);
+}
+if(num_prs==0){printf("Error, %s does not appear to be correctly formatted\n\n", povarfile);exit(1);}
+
+fclose(input);
+
+//get number of chrs
+num_chr3=(count-2)/num_prs-1;
+if(count!=2+num_prs*(1+num_chr3)){printf("Error, %s does not appear to be correctly formatted\n\n", povarfile);exit(1);}
+printf("%s contains values for %d PRS and %d chromosomes\n\n", povarfile, num_prs, num_chr3);
+
+//read chr numbers
+chrindex3=malloc(sizeof(int)*num_chr3);
+
+if((input=fopen(povarfile,"r"))==NULL)
+{printf("Error opening %s\n\n",povarfile);exit(1);}
+
+//skip three elements
+if(fscanf(input, "%s %s %s ", readstring, readstring, readstring)!=3)
+{printf("Error reading first three elements %d of %s\n\n", j+1, povarfile);exit(1);}
+
+for(j=0;j<num_chr3;j++)
+{
+if(fscanf(input, "Chr%d ", chrindex3+j)!=1)
+{printf("Error reading Element %d of %s\n\n", j+4, povarfile);exit(1);}
+}
+
+for(k=1;k<num_prs;k++)	//check same chr
+{
+if(fscanf(input, "%s ", readstring)!=1)
+{printf("Error reading Element %d of %s\n\n", 3+k*(1+num_chr3), povarfile);exit(1);}
+
+for(j=0;j<num_chr3;j++)
+{
+if(fscanf(input, "Chr%d ", &readint)!=1)
+{printf("Error reading Element %d of %s\n\n", 4+j+k*(1+num_chr3), povarfile);exit(1);}
+
+if(readint!=chrindex3[j])
+{printf("Error, chromosomes for PRS %d do not match those for PRS 1\n\n", k+1);exit(1);}
+}
+}
+
+fclose(input);
+}
+else{num_prs=0;}
+
+////////
+
+if(strcmp(offsetfile,"blank")!=0)	//have offsets
+{
+count=countcols(offsetfile);
+if(count!=3){printf("Error, %s should have three columns (not %d)\n\n", offsetfile, count);exit(1);}
+checkcols(offsetfile,count);
 }
 
 ///////////////////////////
@@ -937,7 +1000,7 @@ if(just_check(filename)!=0)
 {printf("Error reading %s; this file would have been created using \"--solve-gre\"\n\n", filename);exit(1);}
 count=countrows(filename);
 
-sprintf(filename,"%s.inverse.bin", invsfile);
+sprintf(filename,"%s.inverse.bin", invsfile);	
 if(just_check(filename)!=0)
 {printf("Error reading %s; this file would have been created using \"--solve-gre\"\n\n", filename);exit(1);}
 
@@ -1193,6 +1256,16 @@ if(count!=3)
 checkcols(sampwfile,count);
 }
 
+if(strcmp(transfile,"blank")!=0)
+{
+count=countcols(transfile);
+if(count!=num_resps)
+{printf("Error, %s should have %d columns (not %d), one for each phenotype in %s\n\n", transfile, num_resps, count, respfile);exit(1);}
+count=countrows(transfile);
+if(count!=num_resps)
+{printf("Error, %s should have %d rows (not %d), one for each phenotype in %s\n\n", transfile, num_resps, count, respfile);exit(1);}
+}
+
 ////////
 
 if(strcmp(genefile,"blank")!=0)	//check correct size
@@ -1352,7 +1425,6 @@ count=countcols(filename);
 if(count!=11){printf("Error, %s should have 11 columns (not %d), suggesting the file has been changed since creation with \"--calc-taggings\"\n\n", filename, count);exit(1);}
 
 count2=countrows(filename)-1;
-printf("File %s contains %d predictors\n", filename, count2);
 
 sprintf(filename,"%s.pathway.sums", pathfile);
 if(just_check(filename)!=0)
@@ -1362,7 +1434,6 @@ count=countcols(filename);
 if(count!=13){printf("Error, %s should have 13 columns (not %d), suggesting the file has been changed since creation with \"--calc-taggings\"\n\n", filename, count);exit(1);}
 
 num_parts=countrows(filename);
-printf("File %s contains %d paths\n", filename, num_parts);
 
 sprintf(filename,"%s.pathway.tagging", pathfile);
 if(just_check(filename)!=0)
@@ -1489,7 +1560,8 @@ if(count-1!=num_parts){printf("Error, the number of categories in %s (%d) does n
 
 if(strcmp(indhers,"blank")!=0)	//check correct size
 {
-if(countcols(indhers)!=2)
+count=countcols(indhers);
+if(count!=2)
 {printf("Error, %s should have two columns, providing predictor names then info score (not %d)\n\n", indhers, countcols(indhers));exit(1);}
 checkcols(indhers,count);
 }

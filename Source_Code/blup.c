@@ -657,8 +657,8 @@ if(num_tops>0){fprintf(output4,"\tTop_Preds");}
 fprintf(output4,"\n");
 for(i=0;i<ns;i++)
 {
-fprintf(output4, "%s\t%s\t", ids1[i], ids2[i]);
-for(k=0;k<num_kins+num_scores+(num_tops>0);k++){fprintf(output4, "%.6f\t", guesses[k][i]);}
+fprintf(output4, "%s\t%s", ids1[i], ids2[i]);
+for(k=0;k<num_kins+num_scores+(num_tops>0);k++){fprintf(output4, "\t%.6f", guesses[k][i]);}
 fprintf(output4, "\n");
 }
 fclose(output4);
@@ -684,8 +684,8 @@ for(k=0;k<axes;k++){fprintf(output, "Axes_%d\t", k+1);}
 fprintf(output, "\n");
 for(j=0;j<length;j++)
 {
-fprintf(output, "%s\t%c\t%c\t%.6e\t", preds[j], al1[j], al2[j], blupcentres[0][j]);
-for(k=0;k<axes;k++){fprintf(output, "%e\t", effects[k][j]);}
+fprintf(output, "%s\t%c\t%c\t%.6e", preds[j], al1[j], al2[j], blupcentres[0][j]);
+for(k=0;k<axes;k++){fprintf(output, "\t%e", effects[k][j]);}
 fprintf(output,"\n");
 }
 fclose(output);
@@ -693,13 +693,13 @@ fclose(output);
 sprintf(filename2,"%s.proj",outfile);
 if((output2=fopen(filename2,"w"))==NULL)
 {printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
-fprintf(output2,"ID1\tID2\t");
-for(k=0;k<axes;k++){fprintf(output2, "PCA_%d\t", k+1);}
+fprintf(output2,"ID1\tID2");
+for(k=0;k<axes;k++){fprintf(output2, "\tPCA_%d", k+1);}
 fprintf(output2, "\n");
 for(i=0;i<ns;i++)
 {
-fprintf(output2, "%s\t%s\t", ids1[i], ids2[i ]);
-for(k=0;k<axes;k++){fprintf(output2, "%.6f\t", guesses[k][i]);}
+fprintf(output2, "%s\t%s", ids1[i], ids2[i ]);
+for(k=0;k<axes;k++){fprintf(output2, "\t%.6f", guesses[k][i]);}
 fprintf(output2, "\n");
 }
 fclose(output2);
@@ -723,8 +723,8 @@ if((output=fopen(filename,"w"))==NULL)
 
 if(type==0)	//save just scores
 {
-fprintf(output,"ID1\tID2\tPhenotype\tCovariates\t");
-for(r=0;r<num_scores;r++){fprintf(output,"Profile_%d\tBLANK\t", r+1);}
+fprintf(output,"ID1\tID2\tPhenotype\tCovariates");
+for(r=0;r<num_scores;r++){fprintf(output,"\tProfile_%d\tBLANK", r+1);}
 fprintf(output,"\n");
 
 for(i=0;i<ns;i++)
@@ -732,16 +732,16 @@ for(i=0;i<ns;i++)
 fprintf(output, "%s\t%s\t", ids1[i], ids2[i]);
 if(resp[i]!=missingvalue){fprintf(output, "%.6f\t", resp[i]);}
 else{fprintf(output, "NA\t");}
-fprintf(output, "%.6f\t", guesses[num_scores][i]);
-for(r=0;r<num_scores;r++){fprintf(output, "%.6f\tNA\t", guesses[r][i]);}
+fprintf(output, "%.6f", guesses[num_scores][i]);
+for(r=0;r<num_scores;r++){fprintf(output, "\t%.6f\tNA", guesses[r][i]);}
 fprintf(output, "\n");
 }
 }
 
 if(type==1)	//save scores and counts
 {
-fprintf(output,"ID1\tID2\tPhenotype\tCovariates\t");
-for(r=0;r<num_scores;r++){fprintf(output,"Profile_%d\tCount_%d\t", r+1, r+1);}
+fprintf(output,"ID1\tID2\tPhenotype\tCovariates");
+for(r=0;r<num_scores;r++){fprintf(output,"\tProfile_%d\tCount_%d", r+1, r+1);}
 fprintf(output,"\n");
 
 for(i=0;i<ns;i++)
@@ -749,8 +749,8 @@ for(i=0;i<ns;i++)
 fprintf(output, "%s\t%s\t", ids1[i], ids2[i]);
 if(resp[i]!=missingvalue){fprintf(output, "%.6f\t", resp[i]);}
 else{fprintf(output, "NA\t");}
-fprintf(output, "%.6f\t", guesses[num_scores][i]);
-for(r=0;r<num_scores;r++){fprintf(output, "%.6f\t%d\t", guesses[r][i], nums[r][i]);}
+fprintf(output, "%.6f", guesses[num_scores][i]);
+for(r=0;r<num_scores;r++){fprintf(output, "\t%.6f\t%d", guesses[r][i], nums[r][i]);}
 fprintf(output, "\n");
 }
 }

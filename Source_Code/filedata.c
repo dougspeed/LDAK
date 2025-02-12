@@ -201,11 +201,11 @@ data++;
 void read_bed_fast(char *bedfile, double *data, double *centres, double *mults, double *sqdevs, double *rates, double *infos, int num_samples_use, int *keepsamps, int length, int *keeppreds, int num_samples, int num_preds, double missingvalue, int *bedzeros, int *bedones, int *bedtwos, int type)
 {
 //type=0 - got stats already, type=1 - get stats without standardizing, type=2 - get stats with standardizing
-int i, i2, j, current, indcount, flag;
+int i, i2, j, first, last, mark, indcount, flag;
 int c0, c1, c2;
 double mean, var, value;
 
-int num_16s, rowlength, rowlength2, rowlength3;
+int num_16s, rowlength, rowlength2, rowlength3, nread;
 unsigned int *keep16s;
 unsigned char startchars[3], *allchars, *newchars, *rowchars;
 double *nulldoubles;
@@ -242,15 +242,17 @@ else{flag=3;}
 }
 }
 
-if(flag==1){printf("Warning, subset is not monotonic\n\n");}
-
 //set rowlengths (either numbers of char for each predictor or number rounded to the next multiple of four)
 rowlength=(num_samples-1)/4+1;
 rowlength2=4*((num_samples-1)/16+1);
 rowlength3=4*((num_samples_use-1)/16+1);
 
+//decide how many rows to read at once
+nread=1+4000000/rowlength;
+if(nread>keeppreds[length-1]+1-keeppreds[0]){nread=keeppreds[length-1]+1-keeppreds[0];}
+
 //allocate (allchars and newchars are a bit longer than necessary, to ensure no overflow when subsetting)
-allchars=malloc(sizeof(unsigned char)*rowlength2);
+allchars=malloc(sizeof(unsigned char)*rowlength2*nread);
 newchars=malloc(sizeof(unsigned char)*rowlength3);
 nulldoubles=malloc(sizeof(double)*num_samples_use);
 
@@ -273,34 +275,37 @@ if(startchars[0]!=108||startchars[1]!=27)
 {printf("Error reading %s; does not appear to be in binary PLINK format\n\n", bedfile);exit(1);}
 if(startchars[2]!=1)
 {printf("Error reading %s; can only read binary PLINK files stored in SNP-major mode\n\n", bedfile);exit(1);}
-current=0;
+last=-1;
 
-//read and process one predictor at a time
 for(j=0;j<length;j++)
 {
-if(keeppreds[j]!=current)
+if(keeppreds[j]>=last)	//read in new block of predictors
 {
-if(fseeko(input, (off_t)sizeof(unsigned char)*rowlength*keeppreds[j]+sizeof(unsigned char)*3, SEEK_SET)!=0)
-{printf("Error reading %s; unable to find Predictor %d %d\n\n", bedfile, j, keeppreds[j]+1);exit(1);}
+first=keeppreds[j];
+last=first+nread;
+if(last>keeppreds[length-1]+1){last=keeppreds[length-1]+1;}
+
+if(fseeko(input, (off_t)sizeof(unsigned char)*rowlength*first+sizeof(unsigned char)*3, SEEK_SET)!=0)
+{printf("Error reading %s; unable to find Predictor %d %d\n\n", bedfile, j, first+1);exit(1);}
+if(fread(allchars, sizeof(unsigned char), (last-first)*rowlength, input)!=(last-first)*rowlength)
+{printf("Error reading values for Predictors %d to %d from %s\n\n", first+1, last, bedfile);exit(1);}
 }
 
-if(fread(allchars, sizeof(unsigned char), rowlength, input)!=rowlength)
-{printf("Error reading values for Predictor %d from %s\n\n", keeppreds[j]+1, bedfile);exit(1);}
-current=keeppreds[j]+1;
+mark=keeppreds[j]-first;
 
 if(flag==1)	//general subset
-{subset_bits(allchars, newchars, num_samples_use, keepsamps);}
+{subset_bits(allchars+mark*rowlength, newchars, num_samples_use, keepsamps);}
 if(flag==2)	//sparse subset
-{subset_bits_sparse((int *)allchars, (int *)newchars, keep16s, num_samples_use);}
+{subset_bits_sparse((int *)(allchars+mark*rowlength), (int *)newchars, keep16s, num_samples_use);}
 if(flag==3)	//block subset
-{subset_bits_block((int *)allchars, (int *)newchars, keep16s, num_samples_use);}
+{subset_bits_block((int *)(allchars+mark*rowlength), (int *)newchars, keep16s, num_samples_use);}
 
 if(type!=0)	//need to get stats
 {
 //tally numbers of zeros, ones and twos
 i=0;
 c0=0;c1=0;c2=0;
-if(flag==0){rowchars=allchars;}
+if(flag==0){rowchars=allchars+mark*rowlength;}
 else{rowchars=newchars;}
 
 //process blocks of four samples
@@ -352,7 +357,7 @@ const double v2=(1-centres[j])*mults[j];
 const double v3=(0-centres[j])*mults[j];
 const double bedbytes[32]={v0,v0, v1,v0, v2,v0, v3,v0, v0,v1, v1,v1, v2,v1, v3,v1, v0,v2, v1,v2, v2,v2, v3,v2, v0,v3, v1,v3, v2,v3, v3,v3};
 
-if(flag==0){convert_doubles(data+(size_t)j*num_samples_use, num_samples_use, allchars, bedbytes);}
+if(flag==0){convert_doubles(data+(size_t)j*num_samples_use, num_samples_use, allchars+mark*rowlength, bedbytes);}
 else{convert_doubles(data+(size_t)j*num_samples_use, num_samples_use, newchars, bedbytes);}
 }
 else{memcpy(data+(size_t)j*num_samples_use, nulldoubles, sizeof(double)*num_samples_use);}
@@ -368,7 +373,7 @@ free(allchars);free(newchars);free(nulldoubles);
 
 void read_bed_full(char *bedfile, unsigned char **data_char, int num_samples_use, int *keepsamps, int length, int *keeppreds, int num_samples, int num_preds, int maxthreads)
 {
-int i, j,count, count2, rowlength;
+int i, j, count, count2, rowlength;
 int thread, threadstart, threadend, threadlength, *Mcurrent;
 unsigned char startchars[3], **Mrowchars, twobits;
 
@@ -455,9 +460,9 @@ for(thread=0;thread<maxthreads;thread++){free(Mrowchars[thread]);}free(Mrowchars
 
 int read_bed_fly(char *bedfile, double *data, int num_samples_use, int *keepsamps, int length, int *keeppreds, int num_samples, int num_preds, double missingvalue)
 {
-int i, j, current, flag;
+int i, j, first, last, mark, flag;
 
-int num_16s, rowlength, rowlength2, rowlength3;
+int num_16s, rowlength, rowlength2, rowlength3, nread;
 unsigned int *keep16s;
 unsigned char startchars[3], *allchars, *newchars;
 
@@ -503,8 +508,12 @@ rowlength=(num_samples-1)/4+1;
 rowlength2=4*((num_samples-1)/16+1);
 rowlength3=4*((num_samples_use-1)/16+1);
 
+//decide how many rows to read at once
+nread=1+4000000/rowlength;
+if(nread>keeppreds[length-1]+1-keeppreds[0]){nread=keeppreds[length-1]+1-keeppreds[0];}
+
 //allocate (allchars and newchars are a bit longer than necessary, to ensure no overflow when subsetting)
-allchars=malloc(sizeof(unsigned char)*rowlength2);
+allchars=malloc(sizeof(unsigned char)*rowlength2*nread);
 newchars=malloc(sizeof(unsigned char)*rowlength3);
 
 //open bed file, check the length and that the first three digits ok
@@ -523,30 +532,33 @@ if(startchars[0]!=108||startchars[1]!=27)
 {printf("Error reading %s; does not appear to be in binary PLINK format\n\n", bedfile);exit(1);}
 if(startchars[2]!=1)
 {printf("Error reading %s; can only read binary PLINK files stored in SNP-major mode\n\n", bedfile);exit(1);}
-current=0;
+last=-1;
 
-//read and process one predictor at a time
 for(j=0;j<length;j++)
 {
-if(keeppreds[j]!=current)
+if(keeppreds[j]>=last)	//read in new block of predictors
 {
-if(fseeko(input, (off_t)sizeof(unsigned char)*rowlength*keeppreds[j]+sizeof(unsigned char)*3, SEEK_SET)!=0)
-{printf("Error reading %s; unable to find Predictor %d %d\n\n", bedfile, j, keeppreds[j]+1);exit(1);}
+first=keeppreds[j];
+last=first+nread;
+if(last>keeppreds[length-1]+1){last=keeppreds[length-1]+1;}
+
+if(fseeko(input, (off_t)sizeof(unsigned char)*rowlength*first+sizeof(unsigned char)*3, SEEK_SET)!=0)
+{printf("Error reading %s; unable to find Predictor %d %d\n\n", bedfile, j, first+1);exit(1);}
+if(fread(allchars, sizeof(unsigned char), (last-first)*rowlength, input)!=(last-first)*rowlength)
+{printf("Error reading values for Predictors %d to %d from %s\n\n", first+1, last, bedfile);exit(1);}
 }
 
-if(fread(allchars, sizeof(unsigned char), rowlength, input)!=rowlength)
-{printf("Error reading values for Predictor %d from %s\n\n", keeppreds[j]+1, bedfile);exit(1);}
-current=keeppreds[j]+1;
+mark=keeppreds[j]-first;
 
 if(flag==1)	//general subset
-{subset_bits(allchars, newchars, num_samples_use, keepsamps);}
+{subset_bits(allchars+mark*rowlength, newchars, num_samples_use, keepsamps);}
 if(flag==2)	//sparse subset
-{subset_bits_sparse((int *)allchars, (int *)newchars, keep16s, num_samples_use);}
+{subset_bits_sparse((int *)(allchars+mark*rowlength), (int *)newchars, keep16s, num_samples_use);}
 if(flag==3)	//block subset
-{subset_bits_block((int *)allchars, (int *)newchars, keep16s, num_samples_use);}
+{subset_bits_block((int *)(allchars+mark*rowlength), (int *)newchars, keep16s, num_samples_use);}
 
 //convert to doubles
-if(flag==0){convert_doubles(data+(size_t)j*num_samples_use, num_samples_use, allchars, bedbytes);}
+if(flag==0){convert_doubles(data+(size_t)j*num_samples_use, num_samples_use, allchars+mark*rowlength, bedbytes);}
 else{convert_doubles(data+(size_t)j*num_samples_use, num_samples_use, newchars, bedbytes);}
 }	//end of j loop
 

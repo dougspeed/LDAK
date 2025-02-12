@@ -355,6 +355,9 @@ fclose(input);
 if(wcount>5){printf("In total, phenotypes are missing for %d samples\n", wcount);}
 printf("\n");
 
+if(count4==0){printf("Error, no samples have phenotypes\n\n");exit(1);}
+if(count4<3){printf("Error, only %d samples have phenotypes\n\n", count4);exit(1);}
+
 //ready to analyse - remember, we only have count4 datapoints (but sX has size count2)
 
 //set third column of sX to one

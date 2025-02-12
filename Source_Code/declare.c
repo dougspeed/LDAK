@@ -107,10 +107,12 @@ double prev2=-9999;
 double ascer=-9999;
 
 char covarfile2[500]="blank", covarfile[500]="";
-char covarnums[2000]="blank", covarnames[2000]="blank";
-char topfile2[500]="blank", topfile[500]="";
+char covarnums2[2000]="blank", covarnums[2000]="blank";
+char covarnames2[2000]="blank", covarnames[2000]="blank";
 char envfile2[500]="blank", envfile[500]="";
+char topfile2[500]="blank", topfile[500]="";
 char factorfile2[500]="blank", factorfile[500]="";
+char povarfile2[500]="blank", povarfile[500]="";
 
 char offsetfile2[500]="blank", offsetfile[500]="";
 
@@ -210,6 +212,7 @@ char sampwfile2[500]="blank", sampwfile[500]="";
 int sandwich=-9999;
 int exact=-9999;
 int scoretest=-9999;
+char transfile2[500]="blank", transfile[500]="";
 
 char genefile2[500]="blank", genefile[500]="";
 double chunks=-9999;
@@ -282,6 +285,7 @@ double herscale=-9999;
 
 int loco=-9999;
 int dichot=-9999;
+int multi=-9999;
 int fast=-9999;
 int fprs=-9999;
 int fastgwa=-9999;
@@ -351,6 +355,8 @@ int num_causals=-9999;
 double her=-9999;
 double cher=-9999;
 double bivar=-9999;
+double bivar2=-9999;
+double bivar3=-9999;
 char probsfile2[500]="blank", probsfile[500];
 char causalsfile2[500]="blank", causalsfile[500];
 char effectsfile2[500]="blank", effectsfile[500];
@@ -437,7 +443,7 @@ size_t *bgen_indexes;
 int maxpreds=500000;	//the apriori max number of predictors in gen files
 
 char **ids1, **ids2, **ids3, **ids4, **allids1, **allids2, **allids3;
-int *chr, *allchr, num_chr, num_chr2, *chrindex;
+int *chr, *allchr, num_chr, num_chr2, num_chr3, *chrindex, *chrindex2, *chrindex3;
 double *cm, *bp, *cmbp, *allcm, *allbp, *chrprops;
 char **preds, **allpreds;
 char **along1, **along2, **allalong1, **allalong2, *al1, *al2, *allal1, *allal2;
@@ -477,7 +483,7 @@ double *chis, *chis2, *chis3, *rchis, *tchis, *schis, *schis2;
 double *rhos, *rhos2, *rhos3, *rrhos, *trhos, *srhos, *srhos2;
 double *a1freq;
 
-int num_quants, num_cats, num_covars, *keepcovars, num_envs, num_fixed;
+int num_quants, num_cats, num_covars, *keepcovars, num_envs, num_fixed, num_prs;
 double *covar, *thetas, *thetasds, *thetapvas, covher, topher;
 
 int num_tops, *tkeeppreds, *tchr;
@@ -510,7 +516,7 @@ char regfile2[500]="blank", regfile[500]="";
 
 int **nums;
 double **blupcentres, **blupfactors, *bluprands, *blupvalues, *blupmids, *blupprojs;
-double **guesses;
+double **guesses, ***guesses2;
 
 int *bstarts, *bends;
 double *R, *RTdata, *RTdata2, *MkinsD, *MkinsD2, *MkinsR, *MkinsR2;
@@ -522,7 +528,7 @@ float *bluprand_single, *guess_single;
 
 int num_fams, *famindex, *famcounts;
 
-double *Pincs, *Pscales, *Pvarphens, *Plambdas, *Proots, *Pspamax;
+double *Pincs, *Pscales, *Pscales2, *Pscales3, *Pvarphens, *Plambdas, *Proots, *Pspamax;
 
 int *tindex, *spastatus;
 double *knots, *bins, **CGF0, **CGF1, **CGF2, **CGF3;
@@ -532,7 +538,7 @@ double DTD[9], DTD2[3], DTD3[4], DTS[3], DTS2[3], invDTD[4];
 double *nullprobs, *nullprobs2, *nullweights, *nullweights2;
 
 int kvikparity;
-double *prs;
+double *prs, *covprs;
 
 int num_genes, genemax;
 int *gchr, *gstrand, *gstarts, *gends, *gparts;
@@ -585,15 +591,16 @@ int maxpairs, num_rels, *firsts, *seconds;
 double *kinships, *cX, *cR;
 
 double *lambdas, *lambdas2, *lambdas3, *lambdas4;
-double *cgammas, *csds;
+double *cgammas, *csds, *ceffs;
 double *effs, *effs2, *effs3, *probs, *probs2, *residuals, *residuals2, *residuals3, *changes, *ess, *ess2;
+
 
 int *bitrun, *bitdo, *bitactive, *bitdet1, *bitdet2;
 double *bitdiffs, *bitpens;
 
 int *Mtops, *Mbests, *Mincs;
 double *Mscales, *Mmses, *Mmses2, *Mneffs;
-double *PT, *PTP, *PTP2, *Q, *Mcals, *Mcombs;
+double *Gmat, *Emat, *Umat, *Umat2, *Wmat, *Wmat2, *Wmat3, *Wmat4, *Wmat5, *Vmat, *Vmat2, *Ymat;
 
 //double *cY, *cX, *cR, *cP, *cHP, *cKP, *cVP, *ctemps, *calphas, *cbetas;
 //double *results1a, *results1b, *results2a, *results2b;
@@ -684,10 +691,10 @@ FILE **Minput;
 size_t scount, smax;
 int i, i2, i3, j, j2, j3, k, k2, g, m, m2, p, p2, q, q2, q3, r, s, count, count2, count3, count4;
 int current, head, found, total, total2, total3, token, indcount, ecount, wcount, xcount, *ycounts;
-int shuffle, start, end, best, worst, mark, mark2, gen, gen2, *gens, flag, cflag, eflag, hflag, *order, *order2, cols[6];
+int shuffle, start, end, best, worst, mark, mark2, mark3, mark4, gen, gen2, *gens, flag, cflag, eflag, hflag, *order, *order2, cols[6];
 double sum, sum2, sum3, sumsq, sumsq2, sumsq3, sumsq4, mean, mean2, mean3, var, var2, var3, value, value2, value3, value4, value5;
 double last, min, max, med, maf, varphen, gif, postmean, unifrand;
-double *hers, *hersold, *hersds, *shares, *sharesds, *cohers, *cohers2;
+double *hers, *hersold, *hersds, *shares, *sharesds, *cohers, *cohers2, mat[4], mat2[2];
 double likenull, like, lrtstat, lrtpva, *likes, *likesold;
 double neff, neff2, neff3, *pens, factor;
 double weightsum, minpvalue, minpvalue2, *jacks, *gaussian, *polates, *polates2;

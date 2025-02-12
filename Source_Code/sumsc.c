@@ -115,11 +115,18 @@ if(count2>0){printf("Warning, %d SNPs have test statistic 0; these have been rep
 
 gif=get_sum_stats(stags, snss, schis, srhos, count, 0, cutoff);
 
+if(dougvar==1)	//for testing, set genic taggings to zero
+{
+printf("Setting genic values to zero (for testing only)\n\n");
+for(j=0;j<count;j++){svars[1][j]=0;}
+}
+
 ////////
 
 //allocate
 
 stats=malloc(sizeof(double)*(3+gcon+cept+1+3)*3);
+stats2=malloc(sizeof(double)*4);
 likes=malloc(sizeof(double)*11);
 cohers=malloc(sizeof(double)*2*2);
 cohers2=malloc(sizeof(double)*3*3);
@@ -213,10 +220,10 @@ fclose(output4);
 ////////
 
 //save coefficients to use as starting values
-value=stats[0];
-value2=stats[1];
-if(gcon==1){value3=stats[2];}
-if(cept==1){value4=stats[2+gcon];}
+stats2[0]=stats[0];
+stats2[1]=stats[1];
+if(gcon==1){stats2[2]=stats[2];}
+if(cept==1){stats2[2+gcon]=stats[2+gcon];}
 
 //re-open progress
 sprintf(filename,"%s.progress",outfile);
@@ -278,11 +285,11 @@ if(fscanf(input3, "%f ", readfloats+j)!=1)
 for(j=0;j<count;j++){svars[2][j]=readfloats[indexer[j]];}
 
 //load coefficients into stats
-stats[0]=value;
-stats[1]=value2;
+stats[0]=stats2[0];
+stats[1]=stats2[1];
 stats[2]=0;
-if(gcon==1){stats[3]=value3;}
-if(cept==1){stats[3+gcon]=value4;}
+if(gcon==1){stats[3]=stats2[2];}
+if(cept==1){stats[3+gcon]=stats2[2+gcon];}
 
 //test model
 num_parts_use=3;
@@ -315,7 +322,7 @@ for(j=0;j<count;j++){free(spreds[j]);}free(spreds);free(sal1);free(sal2);free(st
 for(q=0;q<3;q++){free(svars[q]);free(ssums[q]);}free(svars);free(ssums);
 free(snss);free(schis);free(srhos);
 free(indexer);
-free(stats);free(likes);free(cohers);free(cohers2);free(influs);free(readfloats);
+free(stats);free(stats2);free(likes);free(cohers);free(cohers2);free(influs);free(readfloats);
 
 ///////////////////////////
 

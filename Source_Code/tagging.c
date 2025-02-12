@@ -543,43 +543,6 @@ else{fprintf(output5," %.4f", tally3[j+q*data_length]);}
 fprintf(output5,"\n");
 }
 fclose(output5);
-
-//printf("Compressing the file %s\n\n", filename5);
-//sprintf(cmd, "gzip -f %s", filename5);
-//system(cmd);
-
-/*
-for(q=0;q<num_parts;q++)
-{
-sprintf(filename5,"%s.pathway.%d", outfile, q+1);
-if((output5=fopen(filename5,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename5);exit(1);}
-for(j=0;j<data_length;j++)
-{
-if(windex[j]==1){fprintf(output5,"%.4f\n", tally3[j+q*data_length]);}
-}
-fclose(output5);
-sprintf(cmd, "gzip -f %s", filename5);
-system(cmd);
-
-sprintf(filename5,"%s.bathway.%d", outfile, q+1);
-if((output5=fopen(filename5,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename5);exit(1);}
-for(j=0;j<data_length;j++)
-{
-if(windex[j]==1){fprintf(output5,"%.1f\n", tally3[j+q*data_length]);}
-}
-fclose(output5);
-sprintf(cmd, "gzip -f %s", filename5);
-system(cmd);
-}
-
-sprintf(filename5,"%s.pathway.names", outfile);
-if((output5=fopen(filename5,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename5);exit(1);}
-for(q=0;q<num_parts;q++){fprintf(output5," %s\n", catlabels[q]);}
-fclose(output5);
-*/
 }
 
 if(strcmp(genpreds,"blank")==0)	//compute full ssums (using only heritability snps) and add to bottom of tagging file
@@ -630,9 +593,9 @@ fprintf(output2, "\n");
 }
 else	//compute reduced version of ssums and print separately
 {
-sprintf(filename5,"%s.pathway.sums", outfile);
-if((output5=fopen(filename5,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename5);exit(1);}
+sprintf(filename6,"%s.pathway.sums", outfile);
+if((output6=fopen(filename6,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename6);exit(1);}
 
 for(q=0;q<num_parts;q++)
 {
@@ -671,12 +634,12 @@ ssums[2][3]++;
 }
 }
 
-fprintf(output5,"%s", catlabels[q]);
-fprintf(output5," %.4f %.4f %.4f %d", ssums[0][0], ssums[0][1], ssums[0][2], (int)ssums[0][3]);
-fprintf(output5," %.4f %.4f %.4f %d", ssums[1][0], ssums[1][1], ssums[1][2], (int)ssums[1][3]);
-fprintf(output5," %.4f %.4f %.4f %d\n", ssums[2][0], ssums[2][1], ssums[2][2], (int)ssums[2][3]);
+fprintf(output6,"%s", catlabels[q]);
+fprintf(output6," %.4f %.4f %.4f %d", ssums[0][0], ssums[0][1], ssums[0][2], (int)ssums[0][3]);
+fprintf(output6," %.4f %.4f %.4f %d", ssums[1][0], ssums[1][1], ssums[1][2], (int)ssums[1][3]);
+fprintf(output6," %.4f %.4f %.4f %d\n", ssums[2][0], ssums[2][1], ssums[2][2], (int)ssums[2][3]);
 }
-fclose(output5);
+fclose(output6);
 }
 
 fclose(output2);
@@ -691,7 +654,7 @@ if(savemat==0&&cover==1){printf(", with coverages in %s", filename4);}
 if(savemat==1&&cover==1){printf(", with heritability matrix in %s and coverages in %s", filename3, filename4);}
 printf("\n\n");
 }
-else{printf("Base taggings saved in %s, with pathway taggings in %s\n\n", filename2, filename5);}
+else{printf("Base taggings saved in %s, with pathway taggings in %s and %s\n\n", filename2, filename5, filename6);}
 
 free(windex);free(vindex);
 free(data);

@@ -770,6 +770,7 @@ if(cohers2!=NULL)	//compute variance of (category - exp x total), where exp = ss
 {
 for(q=0;q<num_parts;q++)
 {
+//get cov(category, total) = cov( sum her_q2 s_q_q2/s_q2_q2, sum her_q3)
 sum=0;
 for(q2=0;q2<num_parts;q2++)
 {
@@ -849,7 +850,7 @@ sXTYs[q]=sXTY[q];
 
 for(p=0;p<num_blocks;p++)
 {
-if(p%100000==0){printf("Performing Jackknife %d out of %d\n", p+1, num_blocks);}
+if(p%100000==0&&sflag!=6){printf("Performing Jackknife %d out of %d\n", p+1, num_blocks);}
 start=(double)(p)/num_blocks*length;
 end=(double)(p+1)/num_blocks*length;
 
@@ -881,7 +882,7 @@ jacks[total+1+q+mark]=0;
 for(q2=0;q2<num_parts;q2++){jacks[total+1+q+mark]+=thetas[q2]/gc*ssums[q][q2]/scale;}
 }
 }	//end of p loop
-printf("\n");
+if(sflag!=6){printf("\n");}
 
 //get sds for all stats (as is)
 for(q=0;q<total+1+num_parts;q++)
@@ -927,6 +928,46 @@ mean=sum/num_blocks;mean2=sum2/num_blocks;
 var=(num_blocks-1)*(sumsq/num_blocks-mean*mean2);
 cohers[q+q2*num_parts]=var;
 }}
+}
+
+if(cohers2!=NULL)	//compute variance of (category - exp x total), where exp = ssums[q][np+1]
+{
+//first need top corner of JAIJT (covars of hers) - probably stored in cohers, but cant be sure
+for(q=0;q<num_parts;q++)
+{
+for(q2=0;q2<num_parts;q2++)
+{
+sum=0;sum2=0;sumsq=0;
+for(p=0;p<num_blocks;p++)
+{
+mark=p*(total+1+num_parts);
+sum+=jacks[q+mark];sum2+=jacks[q2+mark];sumsq+=jacks[q+mark]*jacks[q2+mark];
+}
+mean=sum/num_blocks;mean2=sum2/num_blocks;
+var=(num_blocks-1)*(sumsq/num_blocks-mean*mean2);
+JAIJT[q+q2*total]=var;
+}}
+
+//now get cohers2
+for(q=0;q<num_parts;q++)
+{
+//get cov(category, total) = cov( sum her_q2 s_q_q2/s_q2_q2, sum her_q3)
+sum=0;
+for(q2=0;q2<num_parts;q2++)
+{
+for(q3=0;q3<num_parts;q3++)
+{sum+=JAIJT[q2+q3*total]*ssums[q][q2]/ssums[q2][q2];}
+}
+
+//can compute variance if variance of category, total and sum>=0
+if(stats[total+1+q+total+1+num_parts]&&stats[total+total+1+num_parts]>0&&sum>=0)
+{
+value=pow(stats[total+1+q+total+1+num_parts],2)-2*ssums[q][total+1]*sum+pow(ssums[q][total+1]*stats[total+total+1+num_parts],2);
+if(value>=0){cohers2[q]=pow(value,.5);}
+else{cohers2[q]=-9999;}
+}
+else{cohers2[q]=-9999;}
+}
 }
 }	//end of jackknifing
 }	//end of getting SEs

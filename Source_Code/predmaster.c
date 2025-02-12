@@ -147,14 +147,11 @@ einfos=malloc(sizeof(double)*ncomp);
 
 //do initializations required for testing for structure
 
-//fill Y)
+//fill Y
 for(m=0;m<num_resps_use;m++)
 {
 for(i=0;i<num_samples_use;i++){Y[i+m*num_samples_use]=resp[i+m*num_samples_use];}
 }
-
-if(pad==1)	//pad missing
-{impute_matrix_missing(Y, num_samples_use, num_samples_use, num_resps_use, missingvalue);}
 
 //fill Z
 for(j=0;j<num_fixed;j++)
@@ -162,31 +159,15 @@ for(j=0;j<num_fixed;j++)
 for(i=0;i<num_samples_use;i++){Z[i+j*num_samples_use]=covar[i+j*num_samples_use];}
 }
 
-for(m=0;m<num_resps_use;m++)	//solve null models
+for(m=0;m<num_resps_use;m++)	//solve null models (and pad any missing values)
 {
-//get thetas and Yadj (and nullweights if dichot=1)
-if(dichot==0)
-{reg_covar_lin(Y+m*num_samples_use, Z, num_samples_use, num_covars, num_tops, thetas+m*num_fixed, thetasds+m*num_fixed, thetapvas+m*num_fixed, Yadj+m*num_samples_use, 0, NULL, NULL);}
-else	//Yadj = (Y-mu)/W
+if(dichot==0)	//get thetas, adjusted response and pad missing
 {
-reg_covar_log(Y+m*num_samples_use, Z, num_samples_use, num_covars, num_tops, NULL, thetas+m*num_fixed, thetasds+m*num_fixed, thetapvas+m*num_fixed, nullprobs+m*num_samples_use, 2, NULL, NULL, -9999, 0.001, 100);
-for(i=0;i<num_samples_use;i++)
-{
-nullweights[i+m*num_samples_use]=nullprobs[i+m*num_samples_use]*(1-nullprobs[i+m*num_samples_use]);
-Yadj[i+m*num_samples_use]=(Y[i+m*num_samples_use]-nullprobs[i+m*num_samples_use])/nullweights[i+m*num_samples_use];
+reg_covar_lin_missing(Y+m*num_samples_use, Z, num_samples_use, num_fixed, thetas+m*num_fixed, thetasds+m*num_fixed, thetapvas+m*num_fixed, Yadj+m*num_samples_use, missingvalue);
 }
-}
-
-if(respcounts[m]<num_samples_use)	//adjust estimates for padding
+else		//get thetas, nullprobs, nullweights and adjusted response, padding missing
 {
-value=(double)respcounts[m]/num_samples_use;
-value2=pow(value,.5);
-for(j=0;j<num_fixed;j++)
-{
-thetas[j+m*num_fixed]=thetas[j+m*num_fixed]/value;
-thetasds[j+m*num_fixed]=thetasds[j+m*num_fixed]/value2;
-thetapvas[j+m*num_fixed]=erfc(fabs(thetas[j+m*num_fixed]/thetasds[j+m*num_fixed])*M_SQRT1_2);
-}
+reg_covar_log_missing(Y+m*num_samples_use, Z, num_samples_use, num_fixed, NULL, thetas+m*num_fixed, thetasds+m*num_fixed, thetapvas+m*num_fixed, nullprobs+m*num_samples_use, nullweights+m*num_samples_use, Yadj+m*num_samples_use, 0.001, 100, missingvalue, 1);
 }
 
 if(verbose==1)	//save coefficients
@@ -267,12 +248,12 @@ if(useped==0)	//continuing
 //set and save parameters (will set num_pows and num_try, and allocate powers tryps and tryf2s)
 #include "setparamsa.c"
 
-//decide if using calibration predictors (normally only when high structure, but also when using loco ridge and not checking pedigree)
-if(highstruct==1||(mode==151&&loco==1&&checkped==0)){usecal=1;}
+//decide if using calibration predictors (normally only when high structure, but also when using loco and not checking pedigree)
+if(highstruct==1||(loco==1&&checkped==0)){usecal=1;}
 else{usecal=0;}
 
 //decide if using comparison predictors (these are used to revise the grammar gamma scaling factors, so must have usecal=1)
-if(highstruct==1&&mode!=151){usecomp=1;}
+if((highstruct==1||(loco==1&&checkped==0))&&mode!=151){usecomp=1;}
 else{usecomp=0;}
 
 if(revher==-9999)	//decide whether to revise her using MCMC REML
@@ -381,6 +362,7 @@ likesold=malloc(sizeof(double)*total);
 
 cgammas=malloc(sizeof(double)*num_resps_use);
 csds=malloc(sizeof(double)*num_resps_use);
+ceffs=malloc(sizeof(double)*num_resps_use);
 
 if(fast==1)
 {
@@ -401,14 +383,12 @@ Mmses=malloc(sizeof(double)*num_resps_use);
 Mmses2=malloc(sizeof(double)*num_resps_use);
 Mneffs=malloc(sizeof(double)*num_resps_use);
 
-if(mpheno==-1&&skipcv==0)
+if(multi==1)
 {
-PT=malloc(sizeof(double)*num_resps_use*num_test);
-PTP=malloc(sizeof(double)*num_resps_use*num_resps_use);
-PTP2=malloc(sizeof(double)*num_resps_use*num_resps_use);
-Q=malloc(sizeof(double)*num_test*2);
-Mcals=malloc(sizeof(double)*num_resps_use*num_resps_use);
-Mcombs=malloc(sizeof(double)*num_resps_use);
+Gmat=malloc(sizeof(double)*num_resps_use*num_resps_use);
+Emat=malloc(sizeof(double)*num_resps_use*num_resps_use);
+Umat=malloc(sizeof(double)*num_resps_use*num_resps_use);
+Umat2=malloc(sizeof(double)*num_resps_use*num_resps_use);
 }
 
 if(skipcv==0)	//sort out chrindexes - the chromosome corresponding to each phenotype/calibration residual
@@ -492,7 +472,8 @@ for(m=0;m<num_resps_use;m++){Mtops[m]=0;hers[m]=her;}
 }
 else	//estimate hers, exps and probably power, possibly for multiple phenotypes
 {
-#include "getindhersb.c"
+//#include "getindhersb.c"
+#include "getindhersd.c"
 }
 
 time(&midtime);
@@ -627,10 +608,10 @@ free(hers);free(hersold);free(exps);
 if(revher==1){free(tryhers);free(polates);}
 free(lambdas);free(lambdas2);free(lambdas3);free(lambdas4);
 free(pens);free(likes);free(likesold);
-free(cgammas);free(csds);
+free(cgammas);free(csds);free(ceffs);
 if(fast==1){free(bitrun);free(bitdo);free(bitactive);free(bitdet1);free(bitdet2);free(bitdiffs);free(bitpens);}
 free(Mtops);free(Mbests);free(Mincs);free(Mscales);free(Mmses);free(Mmses2);free(Mneffs);
-if(mpheno==-1&&skipcv==0){free(PT);free(PTP);free(PTP2);free(Q);free(Mcals);free(Mcombs);}
+if(multi==1){free(Gmat);free(Emat);free(Umat);free(Umat2);}
 
 free(effs);free(effs2);free(effs3);free(probs);free(residuals);free(residuals2);free(residuals3);free(changes);
 }	//end of continuing

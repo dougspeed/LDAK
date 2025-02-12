@@ -481,10 +481,10 @@ if(strcmp(Xpreds[k][predorder[j]],Xpreds[k][predorder[found]])==0)	//name matche
 {
 if(wcount<5)
 {
-if(exsame==0){printf("Warning, at least two predictors are called %s (you can remove these using \"--exclude-same-names YES\")\n", allpreds[predorder[j]]);}
+if(exsame==0){printf("Warning, at least two predictors are called %s (you can remove these using \"--exclude-same-names YES\")\n", Xpreds[k][predorder[j]]);}
 else
 {
-printf("Warning, at least two predictors are called %s; these will be ignored\n", allpreds[predorder[j]]);
+printf("Warning, at least two predictors are called %s; these will be ignored\n", Xpreds[k][predorder[j]]);
 Xbp[k][predorder[found]]=-1;
 Xbp[k][predorder[j]]=-1;
 }

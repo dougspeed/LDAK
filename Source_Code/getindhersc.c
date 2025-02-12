@@ -109,7 +109,7 @@ fclose(output);
 mark=bit*ndivs/bittotal;
 
 //read data, compute statistics, standardize and set missing to zero
-if(dtype==1&&dougvar==0)	//fast way
+if(dtype==1)	//fast way
 {(void)read_bed_wrapper(datafile, data, centres+bitstart, mults+bitstart, sqdevs+bitstart, rates+bitstart, infos+bitstart, num_samples_use, keepsamps, bitlength, keeppreds_use+bitstart, num_samples, num_preds, missingvalue, bedzeros, bedones, bedtwos, 2, maxthreads);}
 else	//slow way
 {

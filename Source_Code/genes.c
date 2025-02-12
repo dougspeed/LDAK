@@ -94,26 +94,22 @@ if(permute==1){permute_int(order,num_samples_use);}
 //fill Y (maybe permuted)
 for(i=0;i<num_samples_use;i++){Y[i]=resp[order[i]];}
 
-if(pad==1)	//pad missing
-{impute_matrix_missing(Y, num_samples_use, num_samples_use, 1, missingvalue);}
-
 //fill Z (maybe permuted)
 for(j=0;j<num_fixed;j++)
 {
 for(i=0;i<num_samples_use;i++){Z[i+j*num_samples_use]=covar[order[i]+j*num_samples_use];}
 }
 
-if(num_kins==0)	//compute detZTZ, adjust response and get YTCY
+if(num_kins==0)	//compute detZTZ, adjust response, pad missing and get YTCY
 {
 alpha=1.0;beta=0.0;
 dgemm_("T", "N", &num_fixed, &num_fixed, &num_samples_use, &alpha, Z, &num_samples_use, Z, &num_samples_use, &beta, ZTZ, &num_fixed);
 detZTZ=eigen_invert(ZTZ, num_fixed, ZTZ2, -1, ZTZ3, 1);
 
-reg_covar_lin(Y, Z, num_samples_use, num_fixed, 0, thetas, thetasds, thetapvas, Yadj, 0, NULL, NULL);
-
+reg_covar_lin_missing(Y, Z, num_samples_use, num_fixed, thetas, thetasds, thetapvas, Yadj, missingvalue);
 YTCY=0;for(i=0;i<num_samples_use;i++){YTCY+=pow(Yadj[i],2);}
 }
-else	//get starting heritabilities, varnull and likenull (saved in vstarts)
+else	//get starting heritabilities, varnull and likenull (saved in vstarts) - have no missing
 {
 printf("Solving Null Model\n");
 (void)adv_reml(num_samples_use, num_fixed, 0, Y, Z, U, E, kintraces, NULL, -9999, -9999, NULL, NULL, vstarts, tol, maxiter);

@@ -388,7 +388,7 @@ if(duos==-9999){duos=0;}
 
 if(adjpreds==-9999)
 {
-if(strcmp(covarfile,"blank")==0&&strcmp(topfile,"blank")==0&&strcmp(factorfile,"blank")==0){adjpreds=0;}
+if(strcmp(covarfile,"blank")==0&&strcmp(topfile,"blank")==0&&strcmp(factorfile,"blank")==0&&strcmp(povarfile,"blank")==0){adjpreds=0;}
 else
 {
 if(strcmp(prsfile,"blank")!=0){adjpreds=1;}
@@ -429,7 +429,7 @@ if(spathresh==-9999){spathresh=.05;}
 
 if(adjpreds==-9999)
 {
-if(strcmp(covarfile,"blank")==0&&strcmp(topfile,"blank")==0&&strcmp(factorfile,"blank")==0){adjpreds=0;}
+if(strcmp(covarfile,"blank")==0&&strcmp(topfile,"blank")==0&&strcmp(factorfile,"blank")==0&&strcmp(povarfile,"blank")==0){adjpreds=0;}
 else
 {
 if(strcmp(prsfile,"blank")!=0){adjpreds=1;}
@@ -703,6 +703,7 @@ if(loco==-9999){printf("Error, you must use \"--LOCO\" to specify whether to com
 if(verbose==-9999){verbose=(kvikstep==-9999&&gctastep==-9999&&faststep==-9999);}
 
 if(dichot==-9999){dichot=0;}
+if(multi==-9999){multi=0;}
 if(fast==-9999){fast=1;}
 
 if(fprs==-9999)
@@ -766,6 +767,7 @@ if(loco==-9999){printf("Error, you must use \"--LOCO\" to specify whether to com
 if(verbose==-9999){verbose=(kvikstep==-9999&&gctastep==-9999&&faststep==-9999);}
 
 if(dichot==-9999){dichot=0;}
+if(multi==-9999){multi=0;}
 if(fast==-9999){fast=1;}
 
 if(fprs==-9999)
@@ -831,6 +833,7 @@ if(loco==-9999){printf("Error, you must use \"--LOCO\" to specify whether to com
 if(verbose==-9999){verbose=(kvikstep==-9999&&gctastep==-9999&&faststep==-9999);}
 
 if(dichot==-9999){dichot=0;}
+if(multi==-9999){multi=0;}
 if(fast==-9999){fast=1;}
 
 if(fprs==-9999)
@@ -896,6 +899,7 @@ if(loco==-9999){printf("Error, you must use \"--LOCO\" to specify whether to com
 if(verbose==-9999){verbose=(kvikstep==-9999&&gctastep==-9999&&faststep==-9999);}
 
 if(dichot==-9999){dichot=0;}
+if(multi==-9999){multi=0;}
 if(fast==-9999){fast=1;}
 
 if(fprs==-9999)
@@ -1097,6 +1101,8 @@ if((strcmp(covarfile,"blank")!=0||strcmp(envfile,"blank")!=0)&&strcmp(cofile,"bl
 if(strcmp(scorefile,"blank")==0)
 {printf("Error, you must use \"--scorefile\" to provide a file with at least five columns: \"Predictor\", \"A1\", \"A2\" and \"Centre\" (the average allele count, set to NA if unknown), followed by a column of effect sizes for each profile\n\n");exit(1);}
 
+if(loco==-9999){loco=0;}
+
 if(prsvar==-9999){prsvar=0;}
 
 if(savecounts==-9999){savecounts=0;}
@@ -1152,6 +1158,12 @@ if(strcmp(covarfile,"blank")!=0&&cher==-9999)
 
 if(bivar!=-9999&&num_phenos%2!=0)
 {printf("Error, you can only use \"--bivar\" when the number of phenotypes is even (not %d)\n\n", num_phenos);exit(1);}
+
+if(bivar2!=-9999&&num_phenos%2!=0)
+{printf("Error, you can only use \"--bivar-env\" when the number of phenotypes is even (not %d)\n\n", num_phenos);exit(1);}
+
+if(bivar3!=-9999&&num_phenos%2!=0)
+{printf("Error, you can only use \"--bivar-proportion\" when the number of phenotypes is even (not %d)\n\n", num_phenos);exit(1);}
 }
 
 if(mode==174)	//make-snps
@@ -1351,10 +1363,10 @@ else{exsame=1;}
 
 ////////
 
-//exlong - only allowed long alleles for single-predictor regression, calc stats and when making data
+//exlong - only allowed long alleles for single-predictor regression, thinning, calc stats and when making data
 if(exlong==-9999)
 {
-if(mode==131||mode==132||mode==171||mode==181||mode==182||mode==183||mode==184){exlong=0;}
+if(mode==106||mode==107||mode==131||mode==132||mode==171||mode==181||mode==182||mode==183||mode==184){exlong=0;}
 else{exlong=1;}
 }
 
@@ -1364,13 +1376,13 @@ else{exlong=1;}
 if(bitsize==-9999)
 {
 //for modes 101, 104, 106, 107, 110, 141, 156, 192, 194 will set intelligently (later on)
-if(mode==112||mode==114||(mode==117&&extract==1)||mode==122||mode==125||mode==127||mode==128||mode==131||mode==132||mode==145||mode==158||mode==160||mode==162||mode==171||mode==172||mode==173||mode==174||mode==175||mode==186||mode==187||mode==188||mode==189||mode==190){bitsize=1024;}
+if(mode==112||mode==114||(mode==117&&extract==1)||mode==122||mode==125||mode==127||mode==128||mode==131||mode==132||mode==145||mode==158||mode==160||mode==162||mode==171||mode==172||mode==173||mode==174||mode==175||mode==186||mode==187||mode==188||mode==189||mode==190){bitsize=1000;}
 if(mode==151||mode==152||mode==153||mode==154)
 {
 if(fast==0){bitsize=64;}
 else{bitsize=256;}
 }
-if(mode==181||mode==182||mode==183||mode==184||mode==185){bitsize=1024;}
+if(mode==181||mode==182||mode==183||mode==184||mode==185){bitsize=1000;}
 }
 
 //tol used by modes 121, 126, 129, 130, 229, 230, 131 (maybe) 133, 138, 140, 146, 147, 151, 152, 153, 154, 159, 161, 167, 179
@@ -1381,10 +1393,7 @@ if(mode==121||mode==126||mode==129||mode==130||mode==229||mode==230||mode==131||
 if(mode==147)	//sum-cors - used for heritabilities
 {tol=0.0001;}
 if(mode==151||mode==152||mode==153||mode==154)	//ridge, bolt, bayesr and elastic - used for approx likelihood (times n)
-{
-if(dichot==0){tol=1e-6;}
-else{tol=1e-6;}
-}
+{tol=1e-6;}
 if(mode==159)	//mega-prs - used for sumsq
 {tol=0.00001;}
 if(mode==161||mode==167)	//pca - dsyevx will set value

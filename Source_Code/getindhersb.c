@@ -11,7 +11,7 @@ Copyright 2024 Doug Speed.
 
 ///////////////////////////
 
-//Get per-predictor heritabilities using fast-he (data must be in binary format - also get cors and datasqs and find top predictors
+//Get per-predictor heritabilities using fast-he (data must be in binary format - also get cors and datasqs
 
 ///////////////////////////
 
@@ -114,7 +114,7 @@ fclose(output);
 mark=bit*ndivs/bittotal;
 
 //read data, compute statistics, standardize and set missing to zero
-if(dtype==1&&dougvar==0)	//fast way
+if(dtype==1)	//fast way
 {(void)read_bed_wrapper(datafile, data, centres+bitstart, mults+bitstart, sqdevs+bitstart, rates+bitstart, infos+bitstart, num_samples_use, keepsamps, bitlength, keeppreds_use+bitstart, num_samples, num_preds, missingvalue, bedzeros, bedones, bedtwos, 2, maxthreads);}
 else	//slow way
 {
@@ -165,13 +165,16 @@ for(m=0;m<num_resps_use;m++)	//look for big effect predictors
 for(j=0;j<bitlength;j++)	//correlation is approx (XTY/n)^2/sd(Y) - XTY can be obtained from RTdata
 {
 value=pow(RTdata[(size_t)(nmcmc+m)*bitlength+j]/num_samples_use,2);
-if(j==0){value2=value;}
-if(value>value2){value2=value;}
+if(j==0){value2=value;best=0;}
+if(value>value2){value2=value;best=j;}
 }
 
-if(value2>maxcor)	//blank the corresponding column of RTdata and regress top predictor out of Yadj2
+if(value2>maxcor)	//blank the corresponding columns of RTdata and regress top predictor out of Yadj2
 {
 for(j=0;j<bitlength;j++){RTdata[(size_t)(nmcmc+m)*bitlength+j]=0;}
+
+if(dichot==0){reg_covar_matrix(Yadj2+m*num_samples_use, data+(size_t)best*num_samples_use, num_samples_use, 1, 1);}
+else{reg_covar_weighted(Yadj2+m*num_samples_use, data+(size_t)best*num_samples_use, num_samples_use, 1, 1, nullweights+m*num_samples_use);}
 
 if(wcount<5)
 {
@@ -325,6 +328,8 @@ KYtraces2[q+(m+k*num_resps_use)*ndivs]=KYtraces[q+(m+k*num_resps_use)*ndivs];
 (void)eigen_invert(KKtraces3, ndivs, KKtraces2, 1, KYtraces2+(m+k*num_resps_use)*ndivs, 1);
 sum=0;for(q=0;q<ndivs;q++){sum+=KYtraces[q+(m+k*num_resps_use)*ndivs]*KYtraces2[q+(m+k*num_resps_use)*ndivs];}
 varexp[m+k*num_resps_use]=sum;
+
+sum2=0;for(q=0;q<ndivs;q++){sum2+=KYtraces2[q+(m+k*num_resps_use)*ndivs];}
 }
 }	//end of k loop
 
@@ -336,7 +341,7 @@ if(k==0){value=varexp[m];Mtops[m]=0;;}
 if(varexp[m+k*num_resps_use]>value){value=varexp[m+k*num_resps_use];Mtops[m]=k;}
 }
 
-//compute corresponding heritability, check value, then store
+//compute corresponding heritability
 value=0;for(q=0;q<ndivs;q++){value+=KYtraces2[q+(m+Mtops[m]*num_resps_use)*ndivs];}
 
 if(power!=-9999)

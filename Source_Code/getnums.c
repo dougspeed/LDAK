@@ -384,7 +384,7 @@ free(allids1);free(allids2);free(allids3);free(idsorder);free(usedids);
 
 //some more mode-specific checks
 
-if(mode==117&&extract==1)	//check have data for all samples (in theory could be duplicates in famfile)
+if((use_data==2&&num_kins>0)||(mode==117&&extract==1))	//check have data for all samples (in theory could be duplicates in famfile)
 {
 if(strcmp(famfile,datafile)!=0)
 {
@@ -401,7 +401,7 @@ read_ids_bgen(datafile, NULL, NULL, wantids, count, NULL, 0);
 
 count2=find_strings(ids3, num_samples_use, wantids, count, NULL, NULL, NULL, famfile, NULL, NULL, 3);
 if(count2==0){printf("Error, can not find data for any of these\n\n");exit(1);}
-if(count2<num_samples_use){printf("Error, data are only available for %d of these\n\n", count2);exit(1);}
+if(count2<num_samples_use){printf("Error, data are only available for %d of these (if this is intentional, you should use \"--keep\" and/or \"--remove\" to restrict to samples with data)\n\n", count2);exit(1);}
 for(i=0;i<count;i++){free(wantids[i]);}free(wantids);
 }
 
@@ -1010,6 +1010,16 @@ for(j=1;j<num_preds_use;j++)
 if(allchr[keeppreds[j]]!=allchr[keeppreds[j-1]]){num_chr++;}
 }
 
+if(strcmp(prsfile,"blank")!=0)
+{
+if(num_chr>num_chr2)
+{printf("Error, will be analyzing %d chromosomes, but only %d were included when making the PRS\n\n", num_chr, num_chr2);exit(1);}
+}
+
+//do some checks and set some values
+
+if(window_length==-1){window_length=num_preds_use;}
+
 if(num_chr==1&&(kvikstep==2||gctastep==2||faststep==2)&&bychr==1)	//only one chromosome, so modify outfile
 {
 strcpy(filename,outfile);
@@ -1017,14 +1027,11 @@ sprintf(outfile,"%s.chr%d", filename, allchr[keeppreds[0]]);
 printf("Warning, all predictors are on Chromosome %d, so will append \".chr%d\" to the output file stem (e.g., the main results will be saved in %s.assoc); you can prevent this by adding \"--by-chr NO\"\n\n", allchr[keeppreds[0]], allchr[keeppreds[0]], outfile);
 }
 
-//do some checks and set some values
+if((mode==151||mode==152||mode==153||mode==154)&&loco==1)	//some checks for LDAK-KVIK
+{
+if(num_chr==1){printf("Error, there is only one chromosome, so it is not possible to use \"--LOCO YES\"\n\n");exit(1);}
 
-if(window_length==-1){window_length=num_preds_use;}
-
-if(loco==1&&num_chr==1)
-{printf("Error, there is only one chromosome, so it is not possible to use \"--LOCO YES\"\n\n");exit(1);}
-
-if(loco==1&&(mode==151||mode==152||mode==153||mode==154)&&num_preds_use>=1000000&&manypreds==0)
+if(num_preds_use>=1000000&&manypreds==0)
 {
 sprintf(cmd,"--thin-common predictors");
 if(dtype==1){strcpy(cmd2,cmd);sprintf(cmd,"%s --bfile %s", cmd2, udatafile2);}
@@ -1038,12 +1045,13 @@ if(onechr==-1){strcpy(cmd2,cmd);sprintf(cmd,"%s --chr AUTO", cmd2);}
 if(onechr==-3){strcpy(cmd2,cmd);sprintf(cmd,"%s --chr ODD", cmd2);}
 if(onechr==-2){strcpy(cmd2,cmd);sprintf(cmd,"%s --chr EVEN", cmd2);}
 
-printf("Error, it is normally not necessary to use more than about 500,000 predictors when computing the LOCO PRS\n");
+printf("Error, it is normally not necessary to use more than about 600,000 predictors when computing the LOCO PRS\n");
 if(extract==0){printf("We therefore suggest you repeat this command adding \"--extract subset.in\",");}
 else{printf("We therefore suggest you repeat this command using \"--extract subset.in\",");}
-printf("where the file \"subset.in\" contains approximately 500,000 predictors. You may already have such a file (e.g., a list of directly-genotyped SNPs, or those passing stringent quality control); otherwise you can generate it using the command \"%s\"\n", cmd);
+printf("where the file \"subset.in\" contains approximately 600,000 predictors. You may already have such a file (e.g., a list of directly-genotyped SNPs, or those passing stringent quality control); otherwise you can generate it using the command \"%s\"\n", cmd);
 printf("Note that an alternative is to override this error by adding \"--allow-many-predictors YES\" (but the resulting analysis might be very slow)\n\n");
 exit(1);
+}
 }
 
 if(mode==156&&maxcor==-9999)	//can set maxcor

@@ -399,13 +399,14 @@ if(fscanf(input,"%s %d %s ", readstring, losts+j, readstring)!=3)
 }
 fclose(input);
 
-//fill Y and Z, get thetas and standardized residuals
+//fill Y and Z, get thetas and standardized residuals (could be missing values)
 for(i=0;i<num_samples_use;i++)
 {
 Y[i]=resp[i];
 for(j=0;j<num_fixed;j++){Z[i+j*num_samples_use]=covar[i+j*num_samples_use];}
 }
-reg_covar_lin(Y, Z, num_samples_use, num_covars, 0, thetas, thetasds, thetapvas, Yadj, 1, NULL, NULL);
+reg_covar_lin_missing(Y, Z, num_samples_use, num_fixed, thetas, thetasds, thetapvas, Yadj, missingvalue);
+stand_matrix_nomiss(Y, num_samples_use, num_samples_use, 1);
 
 //save
 sprintf(filename,"%s.coeff", greout);

@@ -33,6 +33,17 @@ blupprojs=malloc(sizeof(double)*num_samples_use*num_scores);
 guesses=malloc(sizeof(double*)*(num_scores+1));	//last one is covs
 for(k=0;k<num_scores+1;k++){guesses[k]=malloc(sizeof(double)*num_samples_use);}
 
+if(loco==1)
+{
+chrindex=malloc(sizeof(int)*num_chr);
+guesses2=malloc(sizeof(double**)*num_chr);
+for(p=0;p<num_chr;p++)
+{
+guesses2[p]=malloc(sizeof(double*)*num_scores);
+for(k=0;k<num_scores;k++){guesses2[p][k]=malloc(sizeof(double)*num_samples_use);}
+}
+}
+
 if(prsvar==1){indsds=malloc(sizeof(double)*num_samples_use);}
 
 if(savecounts==1)	//saving counts
@@ -55,6 +66,25 @@ for(k=0;k<num_scores+1;k++)
 for(i=0;i<num_samples_use;i++){guesses[k][i]=0;}
 }
 
+if(loco==1)	//fill chrindex and set guesses2 to zero
+{
+chrindex[0]=chr[0];
+count=1;
+for(j=1;j<data_length;j++)	
+{
+if(chr[j]>chr[j-1]){chrindex[count]=chr[j];count++;}
+}
+if(count!=num_chr){printf("Doug error, 66HB3\n\n");exit(1);}
+
+for(p=0;p<num_chr;p++)
+{
+for(k=0;k<num_scores;k++)
+{
+for(i=0;i<num_samples_use;i++){guesses2[p][k][i]=0;}
+}
+}
+}
+
 if(savecounts==1)	//set nums to zero
 {
 for(k=0;k<num_scores;k++)
@@ -73,13 +103,29 @@ if((output=fopen(filename,"w"))==NULL)
 {printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename);exit(1);}
 fclose(output);
 
-//ready for bit loop
-bittotal=(data_length-1)/bitsize+1;
-for(bit=0;bit<bittotal;bit++)
+//work out how many bits
+bittotal=0;
+bitend=0;
+while(bitend<data_length)
 {
-bitstart=bit*bitsize;
-bitend=(bit+1)*bitsize;
+bitstart=bitend;
+bitend=bitstart+bitsize;
 if(bitend>data_length){bitend=data_length;}
+while(chr[bitend-1]>chr[bitstart]){bitend--;}
+
+bittotal++;
+}
+
+//ready for bit loop
+bit=0;
+bitend=0;
+p=0;
+while(bitend<data_length)
+{
+bitstart=bitend;
+bitend=bitstart+bitsize;
+if(bitend>data_length){bitend=data_length;}
+while(chr[bitend-1]>chr[bitstart]){bitend--;}
 bitlength=bitend-bitstart;
 
 if(bit%step==0)
@@ -123,6 +169,16 @@ for(k=0;k<num_scores;k++)
 for(i=0;i<num_samples_use;i++){guesses[k][i]+=blupprojs[i+k*num_samples_use];}
 }
 
+if(loco==1)	//subtract from corresponding guesses2
+{
+while(chr[bitstart]!=chrindex[p]){p++;}
+
+for(k=0;k<num_scores;k++)
+{
+for(i=0;i<num_samples_use;i++){guesses2[p][k][i]-=blupprojs[i+k*num_samples_use];}
+}
+}
+
 if(savecounts==1)	//deal with nums
 {
 //first increase nums assuming all relevant values are present for each score
@@ -146,7 +202,8 @@ for(k=0;k<num_scores;k++){nums[k][i]-=(blupfactors[k][bitstart+j]!=0);}
 }}
 }}
 }
-}	//end of bit loop
+bit++;
+}	//end of while loop
 printf("\n");
 
 if(strcmp(cofile,"blank")!=0)	//get contribution of covariates
@@ -157,7 +214,39 @@ dgemv_("N", &num_samples_use, &num_covars, &alpha, covar, &num_samples_use, thet
 //else will remain zero
 
 if(prsvar==0)	//save
-{write_scores(guesses, indsds, nums, num_samples_use, num_scores, ids1, ids2, outfile, resp, missingvalue, savecounts);}
+{
+write_scores(guesses, indsds, nums, num_samples_use, num_scores, ids1, ids2, outfile, resp, missingvalue, savecounts);
+
+if(loco==1)
+{
+sprintf(filename2,"%s.loco",outfile);
+
+if((output2=fopen(filename2,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
+
+fprintf(output2,"FID IID");
+for(k=0;k<num_scores;k++)
+{
+fprintf(output2," Profile");
+for(p=0;p<num_chr;p++){fprintf(output2," Chr%d", chrindex[p]);}
+}
+fprintf(output2,"\n");
+
+for(i=0;i<num_samples_use;i++)
+{
+fprintf(output2, "%s %s", ids1[i], ids2[i]);
+for(k=0;k<num_scores;k++)
+{
+fprintf(output2," %.4f", guesses[k][i]);
+for(p=0;p<num_chr;p++){fprintf(output2," %.4f", guesses[k][i]+guesses2[p][k][i]);}
+}
+fprintf(output2,"\n");
+}
+fclose(output2);
+
+printf("LOCO profiles saved in %s\n\n", filename2);
+}
+}
 else	//get sds then save
 {
 for(i=0;i<num_samples_use;i++)
@@ -334,6 +423,16 @@ free(data);
 if(savecounts==1){free(data2);}
 free(blupmids);free(blupprojs);
 for(k=0;k<num_scores+1;k++){free(guesses[k]);}free(guesses);
+if(loco==1)
+{
+free(chrindex);
+for(p=0;p<num_chr;p++)
+{
+for(k=0;k<num_scores;k++){free(guesses2[p][k]);}
+free(guesses2[p]);
+}
+free(guesses2);
+}
 if(prsvar==1){free(indsds);}
 if(savecounts==1)
 {

@@ -514,24 +514,6 @@ if(strcmp(covarnames,"blank")!=0&&strcmp(covarfile,"blank")==0)
 if(strcmp(covarnums,"blank")!=0&&strcmp(covarnames,"blank")!=0)
 {printf("Error, you can not use both \"--covar-cols\" and \"--covar-names\"\n\n");exit(1);}
 
-if(strcmp(topfile,"blank")!=0&&mode==122)
-{printf("Error, you can not use \"--top-preds\" with \"--calc-blups\" (top predictors details are linked to in the remlfile)\n\n");exit(1);}
-
-if(strcmp(topfile,"blank")!=0&&mode==172)
-{printf("Error, you can not use \"--top-preds\" with \"--calc-scores\"; the top predictors should instead be included in the score file\n\n");exit(1);}
-
-if(strcmp(topfile,"blank")!=0&&mode==131&&(strcmp(kinname,"blank")!=0||strcmp(kinlist,"blank")!=0))
-{printf("Error, you can not use \"--top-preds\" if providing a kinship matrix\n\n");exit(1);}
-
-if(strcmp(topfile,"blank")!=0&&mode!=121&&mode!=123&&mode!=124&&mode!=126&&mode!=127&&mode!=128&&mode!=131&&mode!=132&&mode!=133&&mode!=134&&mode!=138&&mode!=151&&mode!=152&&mode!=153&&mode!=154&&mode!=164)
-{printf("Error, you can only use \"--top-preds\" with \"--reml\", \"--he\", \"--pcgc\", \"--fast-reml\", \"--fast-he\", \"--fast-pcgc\", \"--linear\", \"--logistic\", \"--solve-null\", \"--calc-genes-reml\", \"--ridge\", \"--bolt\", \"--bayesr\", \"--elastic\" or \"--adjust-grm\"\n\n");exit(1);}
-
-if(strcmp(topfile,"blank")!=0&&strcmp(sumsfile,"blank")!=0)
-{printf("Error, you can not use \"--top-preds\" with \"--summary\"\n\n");exit(1);}
-
-if(strcmp(topfile,"blank")!=0&&dtype==-9999)
-{printf("Error, when using \"--top-preds\" you must provide a set of genetic data files using \"--bfile\", \"--bgen\", \"--sp\", \"--sped\", \"--speed\" or \"--gen\"\n\n");exit(1);}
-
 if(strcmp(envfile,"blank")!=0&&mode!=121&&mode!=122&&mode!=123&&mode!=124&&mode!=131&&mode!=164&&mode!=169&&mode!=170&&mode!=172)
 {printf("Error, you can only use \"--enviro\" with \"--reml\", \"--calc-blup\", \"--he\", \"--pcgc\", \"--linear\", \"--adjust-grm\", \"--gxemm-iid\", \"--gxemm-free\" or \"--calc-scores\"\n\n");exit(1);}
 
@@ -547,8 +529,26 @@ if(strcmp(envfile,"blank")!=0&&mode==131&&pad==1)
 if(strcmp(envfile,"blank")!=0&&mode==131&&(strcmp(kinname,"blank")!=0||strcmp(kinlist,"blank")!=0))
 {printf("Error, you can not use \"--enviro\" if providing a kinship matrix\n\n");exit(1);}
 
-if(strcmp(envfile,"blank")!=0&&mode==131&&strcmp(topfile,"blank")!=0)
-{printf("Error, you can not use \"--enviro\" with \"--top-preds\"\n\n");exit(1);}
+if(strcmp(topfile,"blank")!=0&&mode==122)
+{printf("Error, you can not use \"--top-preds\" with \"--calc-blups\" (top predictors details are linked to in the remlfile)\n\n");exit(1);}
+
+if(strcmp(topfile,"blank")!=0&&mode==172)
+{printf("Error, you can not use \"--top-preds\" with \"--calc-scores\"; the top predictors should instead be included in the score file\n\n");exit(1);}
+
+if(strcmp(topfile,"blank")!=0&&mode!=121&&mode!=123&&mode!=124&&mode!=126&&mode!=127&&mode!=128&&mode!=131&&mode!=132&&mode!=133&&mode!=134&&mode!=138&&mode!=151&&mode!=152&&mode!=153&&mode!=154&&mode!=164)
+{printf("Error, you can only use \"--top-preds\" with \"--reml\", \"--he\", \"--pcgc\", \"--fast-reml\", \"--fast-he\", \"--fast-pcgc\", \"--linear\", \"--logistic\", \"--solve-null\", \"--calc-genes-reml\", \"--ridge\", \"--bolt\", \"--bayesr\", \"--elastic\" or \"--adjust-grm\"\n\n");exit(1);}
+
+if(strcmp(topfile,"blank")!=0&&mode==131&&(strcmp(kinname,"blank")!=0||strcmp(kinlist,"blank")!=0))
+{printf("Error, you can not use \"--top-preds\" if providing a kinship matrix\n\n");exit(1);}
+
+if(strcmp(topfile,"blank")!=0&&strcmp(sumsfile,"blank")!=0)
+{printf("Error, you can not use \"--top-preds\" with \"--summary\"\n\n");exit(1);}
+
+if(strcmp(topfile,"blank")!=0&&mode==131&&strcmp(envfile,"blank")!=0)
+{printf("Error, you can not use \"--top-preds\" with \"--enviro\"\n\n");exit(1);}
+
+if(strcmp(topfile,"blank")!=0&&dtype==-9999)
+{printf("Error, when using \"--top-preds\" you must provide a set of genetic data files using \"--bfile\", \"--bgen\", \"--sp\", \"--sped\", \"--speed\" or \"--gen\"\n\n");exit(1);}
 
 if(strcmp(factorfile,"blank")!=0&&(mode==122||mode==125))
 {printf("Error, you can not use \"--factors\" with \"--calc-blups\" or \"--reml-predict\"; you should instead use \"--covar\" to provide the combined covariate file produced when running REML\n\n");exit(1);}
@@ -558,6 +558,24 @@ if(strcmp(factorfile,"blank")!=0&&mode!=121&&mode!=123&&mode!=124&&mode!=126&&mo
 
 if(strcmp(factorfile,"blank")!=0&&strcmp(sumsfile,"blank")!=0)
 {printf("Error, you can not use \"--factors\" with \"--summary\"\n\n");exit(1);}
+
+if(strcmp(povarfile,"blank")!=0&&mode!=131&&mode!=132&&mode!=134)
+{printf("Error, you can only use \"--covar-PRS\" with \"--linear\" or \"--logistic\"\n\n");exit(1);}
+
+if(strcmp(povarfile,"blank")!=0&&mode==131&&(strcmp(kinname,"blank")!=0||strcmp(kinlist,"blank")!=0))
+{printf("Error, you can not use \"--covar-PRS\" if providing a kinship matrix\n\n");exit(1);}
+
+if(strcmp(povarfile,"blank")!=0&&mode==131&&strcmp(envfile,"blank")!=0)
+{printf("Error, you can not use \"--covar-PRS\" with \"--enviro\"\n\n");exit(1);}
+
+if(strcmp(povarfile,"blank")!=0&&families==1)
+{printf("Error, you can not use \"--covar-PRS\" with \"--families YES\"\n\n");exit(1);}
+
+if(strcmp(povarfile,"blank")!=0&&trios==1)
+{printf("Error, you can not use \"--covar-PRS\" with \"--trios YES\"\n\n");exit(1);}
+
+if(strcmp(povarfile,"blank")!=0&&duos!=-9999)
+{printf("Error, you can not use \"--covar-PRS\" with \"--duos\"\n\n");exit(1);}
 
 ////////
 
@@ -1016,8 +1034,8 @@ if(trios==1&&duos!=-9999)
 if(adjpreds!=-9999&&mode!=131&&mode!=132&&mode!=134)
 {printf("Error, you can only use \"--adjust-predictors\" with \"--linear\" or \"--logistic\"\n\n");exit(1);}
 
-if(adjpreds!=-9999&&strcmp(covarfile,"blank")==0&&strcmp(topfile,"blank")==0&&strcmp(factorfile,"blank")==0)
-{printf("Error, you can only use \"--adjust-predictors\" if using \"--covar\", \"--top-preds\" and/or \"--factors\"\n\n");exit(1);}
+if(adjpreds!=-9999&&strcmp(covarfile,"blank")==0&&strcmp(topfile,"blank")==0&&strcmp(factorfile,"blank")==0&&strcmp(povarfile,"blank")==0)
+{printf("Error, you can only use \"--adjust-predictors\" if using \"--covar\", \"--top-preds\", \"--factors\" and/or \"--covar-PRS\"\n\n");exit(1);}
 
 if(adjpreds!=-9999&&mode==131&&(strcmp(kinname,"blank")!=0||strcmp(kinlist,"blank")!=0))
 {printf("Error, you can not use \"--adjust-predictors\" if providing a kinship matrix\n\n");exit(1);}
@@ -1102,6 +1120,12 @@ if(scoretest==0&&spatest==1)
 
 if(scoretest==0&&adjpreds!=-9999)
 {printf("Error, you can not use \"--score-test NO\" with \"--adjust-predictors\"\n\n");exit(1);}
+
+if(strcmp(transfile,"blank")!=0&&mode!=131&&mode!=134)
+{printf("Error, you can only use \"--transformation-inverse\" with \"--linear\"\n\n");exit(1);}
+
+if(strcmp(transfile,"blank")!=0&&mpheno!=-1)
+{printf("Error, you can only use \"--transformation-inverse\" with \"--mpheno ALL\"\n\n");exit(1);}
 
 ////////
 
@@ -1408,11 +1432,23 @@ if(herscale!=-9999&&strcmp(indhers,"blank")==0)
 
 ////////
 
-if(loco!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
-{printf("Error, you can only use \"--LOCO\" with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\"\n\n");exit(1);}
+if(loco!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154&&mode!=172)
+{printf("Error, you can only use \"--LOCO\" with \"--ridge\", \"--bolt\", \"--bayesr\", \"--elastic\" or \"--calc-scores\"\n\n");exit(1);}
 
 if(dichot!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
 {printf("Error, you can only use \"--binary\" with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\"\n\n");exit(1);}
+
+if(multi!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
+{printf("Error, you can only use \"--multivariate\" with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\"\n\n");exit(1);}
+
+if(multi==1&&mpheno!=-1)
+{printf("Error, you can only use \"--multivariate YES\" with \"--mpheno ALL\"\n\n");exit(1);}
+
+if(multi==1&&her!=-9999)
+{printf("Error, you can not use \"--multivariate YES\" with \"--her\"\n\n");exit(1);}
+
+if(multi==1&&dichot==1)
+{printf("Error, you can not use \"--multivariate YES\" with \"--binary YES\"\n\n");exit(1);}
 
 if(fast!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
 {printf("Error, you can only use \"--fast\" with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\"\n\n");exit(1);}
@@ -1437,8 +1473,8 @@ if(strcmp(fastfile,"blank")!=0&&fastgwa!=1)
 if(skipcv!=-9999&&mode!=152&&mode!=153&&mode!=154&&mode!=159)
 {printf("Error, you can only use \"--skip-cv\" with \"--bolt\", \"--bayesr\", \"--elastic\" or \"--mega-prs\"\n\n");exit(1);}
 
-if(cvprop!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154&&mode!=159&&mode!=172)
-{printf("Error, you can only use \"--cv-proportion\" with \"--ridge\", \"--bolt\" \"--bayesr\", \"--elastic\", \"--mega-prs\" or \"--calc-scores\"\n\n");exit(1);}
+if(cvprop!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154&&mode!=159)
+{printf("Error, you can only use \"--cv-proportion\" with \"--ridge\", \"--bolt\" \"--bayesr\", \"--elastic\" or \"--mega-prs\"\n\n");exit(1);}
 
 if(strcmp(bvsfile,"blank")!=0&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
 {printf("Error, you can only use \"--cv-samples\" with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\"\n\n");exit(1);}
@@ -1454,6 +1490,9 @@ if(cvprop!=-9999&&strcmp(bvsfile,"blank")!=0)
 
 if(skipcv==1&&loco==1)
 {printf("Error, you can not use \"--skip-cv YES\" with \"--LOCO YES\"\n\n");exit(1);}
+
+if(skipcv==1&&multi==1)
+{printf("Error, you can not use \"--skip-cv YES\" with \"--multivariate YES\"\n\n");exit(1);}
 
 ////////
 
@@ -1630,6 +1669,9 @@ if(checkfreq!=-9999&&mode!=159)
 if(prsvar!=-9999&&mode!=159&&mode!=172)
 {printf("Error, you can only use \"--PRS-variance\" with \"--mega-prs\" or \"--calc-scores\"\n\n");exit(1);}
 
+if(prsvar==1&&loco==1)
+{printf("Error, you can not use \"--PRS-variance YES\" with \"--LOCO YES\"\n\n");exit(1);}
+
 if(prsvar==1&&skipcv==1)
 {printf("Error, you can not use \"--PRS-variance YES\" with \"--skip-cv YES\"\n\n");exit(1);}
 
@@ -1724,6 +1766,15 @@ if(cher!=-9999&&strcmp(covarfile,"blank")==0)
 if(bivar!=-9999&&mode!=173)
 {printf("Error, you can only use \"--bivar\" with \"--make-phenos\"\n\n");exit(1);}
 
+if(bivar2!=-9999&&mode!=173)
+{printf("Error, you can only use \"--bivar-env\" with \"--make-phenos\"\n\n");exit(1);}
+
+if(bivar3!=-9999&&mode!=173)
+{printf("Error, you can only use \"--bivar-proportion\" with \"--make-phenos\"\n\n");exit(1);}
+
+if(bivar3!=-9999&&bivar!=-9999)
+{printf("Error, you can not use \"--bivar-proportion\" and \"--bivar\"\n\n");exit(1);}
+
 if(strcmp(probsfile,"blank")!=0&&mode!=173)
 {printf("Error, you can only use \"--probabilties\" with \"--make-phenos\"\n\n");exit(1);}
 
@@ -1736,14 +1787,23 @@ if(strcmp(probsfile,"blank")!=0&&num_causals==-1)
 if((strcmp(causalsfile,"blank")!=0||strcmp(effectsfile,"blank")!=0)&&mode!=173)
 {printf("Error, you can only use \"--causals\" or \"--effects\" with \"--make-phenos\"\n\n");exit(1);}
 
+if(strcmp(causalsfile,"blank")!=0&&extract==1)
+{printf("Error, when using \"--causals\" you can not use \"--extract\", \"--exclude\", \"--chr\" or \"--snp\"\n\n");exit(1);}
+
 if(strcmp(causalsfile,"blank")!=0&&strcmp(probsfile,"blank")!=0)
 {printf("Error, you can not use \"--causals\" with \"--probabilities\"\n\n");exit(1);}
+
+if(strcmp(causalsfile,"blank")!=0&&bivar!=-9999)
+{printf("Error, you can not use \"--causals\" with \"--bivar\"\n\n");exit(1);}
+
+if(strcmp(causalsfile,"blank")!=0&&bivar2!=-9999)
+{printf("Error, you can not use \"--causals\" with \"--bivar-proportion\"\n\n");exit(1);}
 
 if(strcmp(effectsfile,"blank")!=0&&bivar!=-9999)
 {printf("Error, you can not use \"--effects\" with \"--bivar\"\n\n");exit(1);}
 
-if(strcmp(causalsfile,"blank")!=0&&extract==1)
-{printf("Error, when using \"--causals\" you can not use \"--extract\", \"--exclude\", \"--chr\" or \"--snp\"\n\n");exit(1);}
+if(strcmp(effectsfile,"blank")!=0&&bivar2!=-9999)
+{printf("Error, you can not use \"--effects\" with \"--bivar-proportion\"\n\n");exit(1);}
 
 ////////
 
@@ -1870,8 +1930,8 @@ if(maxsd!=-9999&&mode!=178)
 if(exsame==0&&mode!=131&&mode!=132&&mode!=134)
 {printf("Error, you can only use \"--exclude-same-names NO\" with \"--linear\" or \"--logistic\"\n\n");exit(1);}
 
-if(exlong==0&&mode!=131&&mode!=132&&mode!=134&&mode!=171&&mode!=181&&mode!=182&&mode!=183&&mode!=184)
-{printf("Error, you can only use \"--exclude-long-alleles NO\" with \"--linear\", \"--logistic\", \"--calc-stats\" or when making data\n\n");exit(1);}
+if(exlong==0&&mode!=106&&mode!=107&&mode!=131&&mode!=132&&mode!=134&&mode!=171&&mode!=181&&mode!=182&&mode!=183&&mode!=184)
+{printf("Error, you can only use \"--exclude-long-alleles NO\" with \"--linear\", \"--logistic\", \"--thin\", \"--thin-tops\", \"--calc-stats\" or when making data\n\n");exit(1);}
 
 if(speedlong!=-9999&&mode!=184&&mode!=189)
 {printf("Error, you can only use \"--speed-long\" with \"--make-speed\" or \"--condense-speed\"\n\n");exit(1);}
@@ -1955,7 +2015,7 @@ if(memsave!=-9999&&mode!=121&&mode!=123&&mode!=124&&mode!=126&&mode!=133)
 {printf("Error, you can only use \"--memory-save\" with \"--reml\", \"--he\", \"--pcgc\", \"--fast-reml\" or \"--solve-null\"\n\n");exit(1);}
 
 if(memsave==0&&diagonal==1)
-{printf("Error, you can not use both \"--memory-save NO\" and \"--diagonal YES\"\n\n");exit(1);}
+{printf("Error, you can not use \"--memory-save NO\" with \"--diagonal YES\"\n\n");exit(1);}
 
 ////////
 

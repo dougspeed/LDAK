@@ -256,7 +256,7 @@ for(i=0;i<num_samples_use;i++){sumsq-=pow(XTCX2[i],2);}
 mean=sum/num_samples_use/(num_samples_use-1);
 var=sumsq/num_samples_use/(num_samples_use-1)-pow(mean,2);
 
-//find cutoff so that will obtain about 0.5 n pairs by chance, or 0.05 (whichever higher)
+//find cutoff so that will obtain about 0.1 n pairs by chance, or 0.05 (whichever higher)
 value=mean-normal_inv(0.1/num_samples_use)*pow(var,.5);
 if(value<0.05){value=0.05;}
 printf("The off-diagonal kinships have mean %.4f and SE %.4f; will record sample pairs with estimated kinship above %.4f\n\n", mean, pow(var,.5), value);
@@ -288,7 +288,7 @@ dgemm_("N", "T", &num_samples_use, &bitlength, &token, &alpha, ddata, &num_sampl
 
 for(i2=bitstart;i2<bitend;i2++)
 {
-//save diagonals (no need to correct for winners curse)
+//save diagonals
 firsts[num_rels]=i2;seconds[num_rels]=i2;
 kinships[num_rels]=kins[(size_t)i2+(i2-bitstart)*num_samples_use];
 num_rels++;
@@ -320,6 +320,25 @@ if((output=fopen(filename,"a"))==NULL)
 {printf("Error re-opening %s\n\n",filename);exit(1);}
 fprintf(output,"Error, there are over %d significantly-related pairs; it will not be possible to continue (this has never happened before, so please tell Doug)\n\n", num_rels);
 fclose(output);
+
+exit(1);
+}
+
+if(dougvar==97)	//print out off-diagonal values before and after correction for winners curse, then exit
+{
+sprintf(filename3,"%s.winners", outfile);
+if((output3=fopen(filename3,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename3);exit(1);}
+
+for(i=0;i<num_rels;i++)
+{
+if(firsts[i]!=seconds[i])
+{
+value2=secant_trun(kinships[i], pow(var,.5), value, 0.01, 50, 0);
+fprintf(output3,"%d %d %f %f\n", firsts[i], seconds[i], kinships[i], value2);
+}
+}
+fclose(output3);
 
 exit(1);
 }
@@ -465,7 +484,13 @@ for(i=0;i<num_samples_use;i++){Yadj[i+m*num_samples_use]=(Yadj[i+m*num_samples_u
 }
 else	//use unscaled phenotypes
 {
-for(m=0;m<num_resps_use;m++){pedscales[m]=1.0;}
+for(m=0;m<num_resps_use;m++){pedscales[m]=1.0;
+
+sum=0;sumsq=0;
+for(i=0;i<num_samples_use;i++){sum+=Yadj[i+m*num_samples_use];sumsq+=pow(Yadj[i+m*num_samples_use],2);}
+mean=sum/num_samples_use;
+var=sumsq/num_samples_use-pow(mean,2);
+}
 }
 
 //estimate heritability (have already set tryhers)
@@ -489,7 +514,6 @@ for(m=0;m<num_resps_use;m++)
 {
 for(i=0;i<num_samples_use;i++){cX[(size_t)(nmcmc+m)*num_samples_use+i]=0;}
 for(i=0;i<num_samples_use;i++){cR[(size_t)(nmcmc+m)*num_samples_use+i]=Yadj[i+m*num_samples_use];}
-for(i=0;i<5;i++){printf("i %d is %f %s\n", i+1, Yadj[i+m*num_samples_use], ids3[i]);}
 }
 }
 else	//need one set of random vectors for each phenotype
@@ -511,7 +535,7 @@ for(i=0;i<num_samples_use;i++){cR[(size_t)p*num_samples_use+i]=Yadj[i+m*num_samp
 }
 }
 
-sparse_cgd(num_samples_use, total, num_rels, firsts, seconds, kinships, cX, cR, num_resps_use, NULL, Yadj, dichot, nullweights, num_fixed, Z, 1, 0.0001, tryhers[j], polates+j*num_resps_use, nmcmc, gaussian, -9999, NULL, NULL, NULL, NULL);
+sparse_cgd(num_samples_use, total, num_rels, firsts, seconds, kinships, cX, cR, num_resps_use, NULL, Yadj, dichot, nullweights, 1, 0.0001, tryhers[j], polates+j*num_resps_use, nmcmc, gaussian, -9999, NULL, NULL, NULL, NULL);
 }
 
 for(m=0;m<num_resps_use;m++)	//solve for mth phenotype
@@ -573,7 +597,7 @@ for(i=0;i<num_samples_use;i++){cR[(size_t)p*num_samples_use+i]=cdata[i+(j+m*ncal
 }
 }
 
-sparse_cgd(num_samples_use, total, num_rels, firsts, seconds, kinships, cX, cR, num_resps_use, pedhers, Yadj, dichot, nullweights, num_fixed, Z, 2, 0.0001, -9999, NULL, -9999, NULL, ncal, cdata, cmults, pedgammas, pedsds);
+sparse_cgd(num_samples_use, total, num_rels, firsts, seconds, kinships, cX, cR, num_resps_use, pedhers, Yadj, dichot, nullweights, 2, 0.0001, -9999, NULL, -9999, NULL, ncal, cdata, cmults, pedgammas, pedsds);
 
 //extract prs (and if excluding the PRS, ensure scaling is 1)
 
