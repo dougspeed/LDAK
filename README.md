@@ -2,11 +2,11 @@
 
 Please note that this page focuses on how to download LDAK; if you are instead looking for advice on how to run LDAK, please visit either www.ldak-kvik.com (for documentation related to LDAK-KVIK) or www.dougspeed.com (for documentation on all other features of LDAK).
 
-If you find this page very confusing, you may prefer to instead follow the instructions on www.dougspeed.com/two-simple-analyses.
+If you find this page confusing, you may prefer to instead follow the instructions on www.dougspeed.com/two-simple-analyses.
 
 # How to obtain LDAK
 
-There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first option (downloading the LDAK executable), whereas the third option (compiling from source code) is technically challenging for those without a computer science background.
+There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first option (downloading the LDAK executable), while the third option (compiling from source code) is technically challenging for those without a computer science background.
 
 Please note that the Linux LDAK executable is most regularly updated (by contrast, the Mac executable, conda version and source code tend to be a few months out of date).
 
@@ -44,7 +44,7 @@ ldak6
 # 3A - Compile a Linux version of LDAK from source code:
 (note that if using a Mac, you should instead follow the instructions in 3B)
 
-Please download and extract the file Source_Code.zip. If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
+Please download and extract the file Source_Code.zip (avialable at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
 ```
 gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz
@@ -59,7 +59,7 @@ Please note that this version of LDAK will likely be slower than the pre-compile
 # 3B - Compile a Mac version of LDAK from source code:
 (note that if using Linux, you should instead follow the instructions in 3A)
 
-Please download and extract the file Source_Code.zip. If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
+Please download and extract the file Source_Code.zip (avialable at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
 ```
 gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz -fopenmp
@@ -69,6 +69,8 @@ If succcessful, you should have created a file called ldak6.1, which you can the
 chmod a+x ldak6.1
 ./ldak6.1
 ```
+Note that you may first have to allow your computer to execute non-Apple software. You can do this by opening "System Settings", then clicking on "Privacy & Security", followed by "Developer Tools", and ticking the box that allows apps downloaded from "Anywhere".
+
 # 3C - Compile a Linux version of LDAK that utilizes the Intel MKL libraries:
 
 The pre-compiled Linux version of LDAK uses the Intel MKL libraries, which provide highly-efficient algebraic routines (e.g., for multiplying and decomposing matrices). I currently use the libraries within the 2024 version of oneAPI; the latest version of oneAPI can be downloaded free from  
