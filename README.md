@@ -1,10 +1,10 @@
 # Welcome to the LDAK GitHub Pages
 
-Please note that this page focuses on how to download LDAK; if you are instead looking for advice on how to run LDAK, please visit either www.ldak-kvik.com (for documentation related to LDAK-KVIK) or www.dougspeed.com (for documentation on all other features of LDAK).
+Please note that this page focuses on how to download LDAK; if you are instead looking for advice on how to run LDAK, please visit either www.ldak-kvik.com (for documentation related to LDAK-KVIK) or www.dougspeed.com (for documentation on all other features of LDAK). In particular, if you are completely new to LDAK, we suggest you follow the instructions on www.dougspeed.com/two-simple-analyses.
 
 # How to obtain LDAK
 
-There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first way (i.e., downloading the LDAK executable).
+There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first way (i.e., downloading the LDAK executable). Please note that LDAK is a Unix-based software, that must be run from a Unix Shell (e.g., using the Terminal application, available both on Linux and Mac computers). For advice on using LDAK on a Windows computer, please visit www.dougspeed.com/run-ldak-on-windows.
 
 # 1A - Download the Linux executable:
 (note that if using a Mac, you should instead follow the instructions in 1B)
@@ -14,8 +14,6 @@ If you plan to run LDAK on a Linux computer, please download the file ldak6.1.li
 ```
 wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
 ```
-
-You should then check that 
 
 # 1B - Download the Mac executable:
 (note that if using Linux, you should instead follow the instructions in 1A)
