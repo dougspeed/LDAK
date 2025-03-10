@@ -6,7 +6,7 @@ If you find this page very confusing, you may prefer to instead follow the instr
 
 # How to obtain LDAK
 
-There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first way (i.e., downloading the LDAK executable).
+There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first option (downloading the LDAK executable), whereas the third option (compiling from source code) is technically challenging for those without a computer science background.
 
 Please note that the Linux LDAK executable is most regularly updated (by contrast, the Mac executable, conda version and source code tend to be a few months out of date).
 
@@ -41,13 +41,46 @@ conda activate ldak_env
 # check ldak runs if you type the following
 ldak6
 ```
+# 3A - Compile a Linux version of LDAK from source code:
+(note that if using a Mac, you should instead follow the instructions in 3B)
 
-3 - The final option is to compile LDAK yourself. You should first download the source code from the repository at the top of this page (either use git clone, or press the green button that says "Code", then select "Download zip"). You can then compile LDAK using a command such as
+Please download and extract the file Source_Code.zip. If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
 ```
-gcc -O3 -o ldak6.1 ldak.c libqsopt.linux.a -lblas -llapack -lm -lz -fopenmp
+gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz
+```
+If succcessful, you should have created a file called ldak6.1, which you can run by typing
+```
 chmod a+x ldak6.1
+./ldak6.1
 ```
+Please note that this version of LDAK will likely be slower than the pre-compiled Linux version of LDAK, because it does not utilize the Intel MKL libraries (see 3C for more details).
+
+# 3B - Compile a Mac version of LDAK from source code:
+(note that if using Linux, you should instead follow the instructions in 3A)
+
+Please download and extract the file Source_Code.zip. If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
+
+```
+gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz -fopenmp
+```
+If succcessful, you should have created a file called ldak6.1, which you can run by typing
+```
+chmod a+x ldak6.1
+./ldak6.1
+```
+# 3C - Compile a Linux version of LDAK that utilizes the Intel MKL libraries:
+
+The pre-compiled Linux version of LDAK uses the Intel MKL libraries, which provide highly-efficient algebraic routines (e.g., for multiplying and decomposing matrices). I currently use the libraries within the 2024 version of oneAPI; the latest version of oneAPI can be downloaded free from  
+https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html
+
+I then compile LDAK using the commands
+
+```
+source intel/oneapi/setvars.sh
+gcc --static -static-libgcc -O3 -o ldak6.1.linux ldak/ldak_mkl.c ldak/libqsopt.linux.a -m64 -Wl,--start-group ${MKLROOT}/lib/libmkl_intel_lp64.a ${MKLROOT}/lib/libmkl_gnu_thread.a ${MKLROOT}/lib/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -lz -I${MKLROOT}/include -fopenmp
+```
+Note that the first command depends on where you installed oneAPI. Further, I generated the second command based on help from the Intel MKL Link Advisor (https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-link-line-advisor.html).
 
 # LDAK documentation
 
