@@ -49,7 +49,7 @@ Please download and extract the file Source_Code.zip. If you open a terminal win
 ```
 gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz
 ```
-If succcessful, you should have created a file called ldak6.1, which you can run by typing
+If succcessful, you should have created a file called ldak6.1, which you can then run by typing
 ```
 chmod a+x ldak6.1
 ./ldak6.1
@@ -64,7 +64,7 @@ Please download and extract the file Source_Code.zip. If you open a terminal win
 ```
 gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz -fopenmp
 ```
-If succcessful, you should have created a file called ldak6.1, which you can run by typing
+If succcessful, you should have created a file called ldak6.1, which you can then run by typing
 ```
 chmod a+x ldak6.1
 ./ldak6.1
