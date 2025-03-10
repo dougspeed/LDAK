@@ -44,10 +44,10 @@ ldak6
 # 3A - Compile a Linux version of LDAK from source code:
 (note that if using a Mac, you should instead follow the instructions in 3B)
 
-Please download and extract the file Source_Code.zip (avialable at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
+Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
 ```
-gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz
+gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz -fopenmp 
 ```
 Sometimes it is necessary to add the option "-no-pie", while adding "-Wformat-overflow=0" reduces the warnings. 
 If succcessful, you should have created a file called ldak6.1, which you can then run by typing
@@ -60,7 +60,7 @@ Please note that this version of LDAK will likely be slower than the pre-compile
 # 3B - Compile a Mac version of LDAK from source code:
 (note that if using Linux, you should instead follow the instructions in 3A)
 
-Please download and extract the file Source_Code.zip (avialable at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
+Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
 ```
 gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz
