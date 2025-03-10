@@ -1,29 +1,48 @@
-# Welcome to the GitHub pages for LDAK
+# Welcome to the LDAK GitHub Pages
 
-LDAK is our software for analyzing data from genome-wide association studies (GWAS). It includes state-of-the-art tools for association analysis, constructing prediction models and heritability analysis. 
+Please note that this page focuses on how to download LDAK; if you are instead looking for advice on how to run LDAK, please visit either www.ldak-kvik.com (for documentation related to LDAK-KVIK) or www.dougspeed.com (for documentation on all other features of LDAK).
 
 # How to obtain LDAK
 
-1 - The easiest way to obtain LDAK is by downloading the executable from the repository at the top of this page.
+There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first way (i.e., downloading the LDAK executable).
 
-If you plan to run LDAK on a Linux computer, please download the file ldak6.1.linux; you can either click on the link, then find the download button, or you can use the following command
+# 1A - Download the Linux executable:
+(note that if using a Mac, you should instead follow the instructions in 1B)
 
-```
-wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
-```
-
-If you plan to run LDAK on a MAC, please download the file ldak6.mac; you can either click on the link, then find the download button, or you can use the following command
+If you plan to run LDAK on a Linux computer, please download the file ldak6.1.linux; you can either click on the name of the file at the top of this page, then find the download button, or you can use the following command
 
 ```
 wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
 ```
-Note that there is also a beta Linux version of LDAK, but please only use this version if asked.
 
-2 - Alternatively, you can install LDAK via conda, using the following command
+You should then check that 
+
+# 1B - Download the Mac executable:
+(note that if using Linux, you should instead follow the instructions in 1A)
+
+If you plan to run LDAK on a Mac, please download the file ldak6.1.mac; you can either click on the name of the file at the top of this page, then find the download button, or you can use the following command
 
 ```
-conda install genomedk::ldak6
+wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
 ```
+Please note that the Mac version of LDAK is normally a few months out of date (so if you require the very latest version of LDAK, please find a Linux computer / server and use the Linux executable).
+
+You will see there is also a beta Linux version of LDAK, but please only use this version if asked.
+
+# 2 - Install LDAK via conda (Linux systems only):
+
+```
+# create a new environment and install ldak6
+conda create -n ldak_env -c genomedk ldak6
+
+# load the new environment
+conda activate ldak_env
+
+# check ldak runs if you type the following
+ldak6
+```
+
+Please note that the conda version of LDAK is usually a few months out of date (so if you require the latest version of LDAK, please download the Linux executable)
 
 3 - The final option is to compile LDAK yourself. You should first download the source code from the repository at the top of this page (either use git clone, or press the green button that says "Code", then select "Download zip"). You can then compile LDAK using a command such as
 
