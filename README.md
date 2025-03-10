@@ -1,6 +1,6 @@
 # Welcome to the LDAK GitHub Pages
 
-Please note that this page focuses on how to download LDAK; if you are instead looking for advice on how to run LDAK, please visit either www.ldak-kvik.com (for documentation related to LDAK-KVIK) or www.dougspeed.com (for documentation on all other features of LDAK).
+Please note that this page focuses on how to download LDAK; if you are instead looking for advice on how to run LDAK, please visit either www.ldak-kvik.com (for documentation related to LDAK-KVIK) or www.dougspeed.com (for documentation on all other features).
 
 If you find this page confusing, you may prefer to instead follow the instructions on www.dougspeed.com/two-simple-analyses.
 
@@ -49,6 +49,7 @@ Please download and extract the file Source_Code.zip (avialable at the top of th
 ```
 gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz
 ```
+Sometimes it is necessary to add the option "-no-pie", while adding "-Wformat-overflow=0" reduces the warnings. 
 If succcessful, you should have created a file called ldak6.1, which you can then run by typing
 ```
 chmod a+x ldak6.1
@@ -62,7 +63,7 @@ Please note that this version of LDAK will likely be slower than the pre-compile
 Please download and extract the file Source_Code.zip (avialable at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
 ```
-gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz -fopenmp
+gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz
 ```
 If succcessful, you should have created a file called ldak6.1, which you can then run by typing
 ```
