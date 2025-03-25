@@ -60,17 +60,18 @@ Please note that this version of LDAK will likely be slower than the pre-compile
 # 3B - Compile a Mac version of LDAK from source code:
 (note that if using Linux, you should instead follow the instructions in 3A)
 
-Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
+Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using one of the following two commands (note that the second command will compile a slightly reduced version of LDAK, that is unable to compute weightings)
 
 ```
 gcc -O3 -o ldak6.1 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz
+gcc -O3 -o ldak6.1 ldak_nomkl_noqsopt.c -lblas -llapack -lm -lz
 ```
 If succcessful, you should have created a file called ldak6.1, which you can then run by typing
 ```
 chmod a+x ldak6.1
 ./ldak6.1
 ```
-Note that you may first have to allow your computer to execute non-Apple software. You can do this by opening "System Settings", then clicking on "Privacy & Security", followed by "Developer Tools", and ticking the box that allows apps downloaded from "Anywhere".
+Note that you may have to give your Mac permission to run LDAK; you can do this within System Settings / Privacy & Security (sometimes there will be a button that allows LDAK to run; otherwise, try ticking the box that allows apps downloaded from "Anywhere")
 
 # 3C - Compile a Linux version of LDAK that utilizes the Intel MKL libraries:
 
