@@ -73,7 +73,7 @@ chmod a+x ldak6.1
 ```
 Note that you may have to give your Mac permission to run LDAK; you can do this within System Settings / Privacy & Security (sometimes there will be a button that allows LDAK to run; otherwise, try ticking the box that allows apps downloaded from "Anywhere")
 
-# 3C - Compile a Linux version that utilizes the Intel MKL libraries:
+# 3C - Compile a Linux version that uses Intel MKL:
 
 The pre-compiled Linux version of LDAK uses the Intel MKL libraries, which provide highly-efficient algebraic routines (e.g., for multiplying and decomposing matrices). I currently use the libraries within the 2024 version of oneAPI; the latest version of oneAPI can be downloaded free from  
 https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html
