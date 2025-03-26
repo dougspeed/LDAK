@@ -41,7 +41,7 @@ conda activate ldak_env
 # check ldak runs if you type the following
 ldak6
 ```
-# 3A - Compile a Linux version of LDAK from source code:
+# 3A - Compile a Linux version from source code:
 (note that if using a Mac, you should instead follow the instructions in 3B)
 
 Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
@@ -57,7 +57,7 @@ chmod a+x ldak6.1
 ```
 Please note that this version of LDAK will likely be slower than the pre-compiled Linux version of LDAK, because it does not utilize the Intel MKL libraries (see 3C for more details).
 
-# 3B - Compile a Mac version of LDAK from source code:
+# 3B - Compile a Mac version from source code:
 (note that if using Linux, you should instead follow the instructions in 3A)
 
 Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using one of the following two commands (note that the second command will compile a slightly reduced version of LDAK, that is unable to compute weightings)
@@ -73,7 +73,7 @@ chmod a+x ldak6.1
 ```
 Note that you may have to give your Mac permission to run LDAK; you can do this within System Settings / Privacy & Security (sometimes there will be a button that allows LDAK to run; otherwise, try ticking the box that allows apps downloaded from "Anywhere")
 
-# 3C - Compile a Linux version of LDAK that utilizes the Intel MKL libraries:
+# 3C - Compile a Linux version that utilizes the Intel MKL libraries:
 
 The pre-compiled Linux version of LDAK uses the Intel MKL libraries, which provide highly-efficient algebraic routines (e.g., for multiplying and decomposing matrices). I currently use the libraries within the 2024 version of oneAPI; the latest version of oneAPI can be downloaded free from  
 https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html
