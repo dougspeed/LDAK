@@ -19,6 +19,8 @@ If you plan to run LDAK on a Linux computer, please download the file ldak6.1.li
 ```
 wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
 ```
+You may have noticed there is also a beta Linux version of LDAK, but please only use this version if asked.
+
 # 1B - Download the Mac executable:
 (note that if using Linux, you should instead follow the instructions in 1A)
 
@@ -27,7 +29,6 @@ If you plan to run LDAK on a Mac, please download the file ldak6.1.mac; you can 
 ```
 wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
 ```
-You may have noticed there is also a beta Linux version of LDAK, but please only use this version if asked.
 
 # 2 - Install LDAK via conda (Linux systems only):
 
