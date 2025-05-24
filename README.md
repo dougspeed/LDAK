@@ -100,4 +100,4 @@ If you have problems running LDAK, we prefer if you open an issue at www.github.
 
 # Contributors
 
-These pages and the LDAK software are maintained and developed by Doug Speed (www.pure.au.dk/portal/en/persons/doug%40qgg.au.dk) and Jasper Hof (www.pure.au.dk/portal/en/persons/jasper.hof%40qgg.au.dk).
+These pages and the LDAK software are maintained and developed by Doug Speed (pure.au.dk/portal/en/persons/doug%40qgg.au.dk) and Jasper Hof (pure.au.dk/portal/en/persons/jasper.hof%40qgg.au.dk).
