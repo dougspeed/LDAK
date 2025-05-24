@@ -78,7 +78,7 @@ Note that you may have to give your Mac permission to run LDAK; you can do this 
 # 3C - Compile a Linux version that uses Intel MKL:
 
 The pre-compiled Linux version of LDAK uses the Intel MKL libraries, which provide highly-efficient algebraic routines (e.g., for multiplying and decomposing matrices). I currently use the libraries within the 2024 version of oneAPI; the latest version of oneAPI can be downloaded free from  
-https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html
+www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html
 
 I then compile LDAK using the commands
 
@@ -86,7 +86,7 @@ I then compile LDAK using the commands
 source intel/oneapi/setvars.sh
 gcc --static -static-libgcc -O3 -o ldak6.1.linux ldak/ldak_mkl.c ldak/libqsopt.linux.a -m64 -Wl,--start-group ${MKLROOT}/lib/libmkl_intel_lp64.a ${MKLROOT}/lib/libmkl_gnu_thread.a ${MKLROOT}/lib/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -lz -I${MKLROOT}/include -fopenmp
 ```
-Note that the first command depends on where you installed oneAPI. Further, I generated the second command based on help from the Intel MKL Link Advisor (https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-link-line-advisor.html).
+Note that the first command depends on where you installed oneAPI. Further, I generated the second command based on help from the Intel MKL Link Advisor (www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-link-line-advisor.html).
 
 # LDAK documentation
 
@@ -96,8 +96,8 @@ For documentation on all other features of LDAK, please see www.dougspeed.com
 
 # Asking for help
 
-If you have problems running LDAK, we prefer if you open an issue at https://github.com/dougspeed/LDAK/issues. However, you can instead email doug \<at\> qgg \<dot\> au \<dot\> .dk.
+If you have problems running LDAK, we prefer if you open an issue at www.github.com/dougspeed/LDAK/issues. However, you can instead email doug \<at\> qgg \<dot\> au \<dot\> .dk.
 
 # Contributors
 
-These pages and the LDAK software are maintained and developed by Doug Speed (https://pure.au.dk/portal/en/persons/doug%40qgg.au.dk) and Jasper Hof (https://pure.au.dk/portal/en/persons/jasper.hof%40qgg.au.dk).
+These pages and the LDAK software are maintained and developed by Doug Speed (www.pure.au.dk/portal/en/persons/doug%40qgg.au.dk) and Jasper Hof (www.pure.au.dk/portal/en/persons/jasper.hof%40qgg.au.dk).
