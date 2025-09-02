@@ -57,7 +57,7 @@ After bulding the Docker image, LDAK can be run inside docker, mounting the curr
 ```
 docker run --rm -v $(pwd):/output ldak
 ```
-This can be followed with a list of arguments (e.g., `--bfile geno --calc-stats stats`). **Please Note:** if you are working in Windows Powershell, `$(pwd)` should be replaced with `${PWD}`.
+This can be followed with a list of arguments (e.g., `--bfile geno --calc-stats stats`). **Please Note** that if you are working in Windows Powershell, `$(pwd)` should be replaced with `${PWD}`.
 
 # 4A - Compile a Linux version from source code:
 (note that if using a Mac, you should instead follow the instructions in 3B)
