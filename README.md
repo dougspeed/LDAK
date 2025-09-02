@@ -6,7 +6,7 @@ If you find this page confusing, you may prefer to instead follow the instructio
 
 # How to obtain LDAK
 
-There are three ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, or you can compile your own version of LDAK from the source code. We generally recommend the first option (downloading the LDAK executable), while the third option (compiling from source code) is technically challenging for those without a computer science background.
+There are four ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, you can install LDAK using Docker, or you can compile your own version of LDAK from the source code. We generally recommend the first option (downloading the LDAK executable), while the third option (compiling from source code) is technically challenging for those without a computer science background.
 
 Please note that the Linux LDAK executable is most regularly updated (by contrast, the Mac executable, conda version and source code tend to be a few months out of date).
 
