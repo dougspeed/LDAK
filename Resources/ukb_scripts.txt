@@ -1,0 +1,47 @@
+The following commands were used in the LDAK-KVIK on UKB-RAB tutorial.
+
+ --- Setting up the Cloud Workstation ---
+dx ssh_config
+dx run cloud_workstation -imax_session_length=10h --allow-ssh -y --name "Jasper"
+
+dx ssh <jobid> 
+unset DX_WORKSPACE_ID
+dx cd $DX_PROJECT_CONTEXT_ID:
+
+--- Downloading LDAK ---
+git clone https://github.com/dougspeed/LDAK.git
+cd LDAK
+docker build -t ldak .
+
+wget https://github.com/dougspeed/LDAK/raw/main/ldak6.1.linux
+chmod a+x ldak6.1.linux
+
+--- Preparing genotype and phenotype data ---
+dx extract_dataset <appid>.dataset --list-fields
+dx extract_dataset <appid>.dataset –fields \ "participant.eid,participant.eid, participant.p30840_i0" -o "data_bilirubin"
+dx extract_dataset <appid>. dataset --fields "participant.eid,participant.eid,participant.p22009_a1,participant.p22009_a2,participant.p22009_a3,participant.p22009_a4,participant.p22009_a5,participant.p22009_a6,participant.p22009_a7,participant.p22009_a8,participant.p22009_a9,participant.p22009_a10" -o "data_pcs"
+
+sed -i '1s/.*/FID,IID,Pheno/' data_bilirubin
+sed -E 's/(^|,)(,|$)/\1NA\2/g' data_bilirubin | sed -E 's/(^|,)(,|$)/\1NA\2/g' | awk 'gsub(",","\t",$0)' > data_bilirubin_tab
+
+sed -i '1s/.*/FID,IID,PC1,PC2,PC3,PC4,PC5,PC6,PC7,PC8,PC9,PC10/' data_pcs
+sed -E 's/(^|,)(,|$)/\1NA\2/g' data_pcs | sed -E 's/(^|,)(,|$)/\1NA\2/g' | awk 'gsub(",","\t",$0)' > data_pcs_tab
+
+dx download Bulk/Genotype\ Results/Genotype\ calls/ukb22418_c{1..22}_b0_v2.{bed,bim,fam}
+for j in {1..22}; do echo ukb22418_c${j}_b0_v2 ; done > list.txt
+shuf -n 2000 ukb22418_c22_b0_v2.fam > inds.txt
+../ldak6.1.linux --make-bed ukb_merged --mbfile list.txt --keep inds.txt
+
+--- Running LDAK-KVIK ---
+./ldak6.1.linux --kvik-step1 kvik --bfile ukb_merged --pheno data_bilirubin_tab --covar data_pcs_tab --max-threads 2
+./ldak6.1.linux --kvik-step2 kvik --bfile ukb_merged \
+    --pheno data_bilirubin_tab --covar data_pcs_tab --max-threads 2
+
+docker run --rm \
+    -v $(pwd):/output \
+    ldak --kvik-step1 kvik --bfile ukb_merged \
+    --pheno data_height_tab --covar data_pcs_tab --max-threads 2
+docker run --rm \
+    -v $(pwd):/output \
+    ldak --kvik-step2 kvik --bfile ukb_merged \
+    --pheno data_height_tab --covar data_pcs_tab --max-threads 2
