@@ -44,17 +44,15 @@ ldak6
 
 # 3 - Install LDAK via Docker 
 
-This repository provides a Dockerfile for running LDAK, which can be downloaded from GitHub:
+This repository provides a Dockerfile for running LDAK, which can also be downloaded from Docker Hub:
 ```
-git clone https://github.com/dougspeed/LDAK.git
-cd LDAK
-docker build -t ldak .
+docker pull jasperhof/ldak:6.1
 ``` 
 Alternatively, it is possible to download the GitHub repository manually, navigate into the directory on your computer, and run `docker build -t ldak .`. Note that in both cases, you should first install Docker on the computer.
 
 After bulding the Docker image, LDAK can be run inside docker, mounting the current working directory as the `output` location:
 ```
-docker run --rm -v $(pwd):/output ldak
+docker run --rm -v $(pwd):/output jasperhof/ldak:6.1
 ```
 This can be followed with a list of arguments (e.g., `--bfile geno --calc-stats stats`). **Please Note** that if you are working in Windows Powershell, `$(pwd)` should be replaced with `${PWD}`.
 
