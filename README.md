@@ -8,7 +8,7 @@ If you find this page confusing, you may prefer to instead follow the instructio
 
 There are four ways to obtain LDAK; you can download the LDAK executable, you can install LDAK via conda, you can install LDAK using Docker, or you can compile your own version of LDAK from the source code. We generally recommend the first option (downloading the LDAK executable), while the fourth option (compiling from source code) is technically challenging for those without a computer science background.
 
-Please note that the Linux LDAK executable is most regularly updated (by contrast, the Mac executable, conda version and source code tend to be a few months out of date).
+Please note that the Linux LDAK executable is most regularly updated (by contrast, the Mac executable, conda version, Dockerfile and source code tend to be a few months out of date).
 
 # 1A - Download the Linux executable:
 (note that if using a Mac, you should instead follow the instructions in 1B)
@@ -57,7 +57,7 @@ docker run --rm -v $(pwd):/output jasperhof/ldak:6.1
 This can be followed with a list of arguments (e.g., `--bfile geno --calc-stats stats`). **Please Note** that if you are working in Windows Powershell, `$(pwd)` should be replaced with `${PWD}`.
 
 # 4A - Compile a Linux version from source code:
-(note that if using a Mac, you should instead follow the instructions in 3B)
+(note that if using a Mac, you should instead follow the instructions in 4B)
 
 Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
@@ -73,7 +73,7 @@ chmod a+x ldak6.1
 Please note that this version of LDAK will likely be slower than the pre-compiled Linux version of LDAK, because it does not utilize the Intel MKL libraries (see 3C for more details).
 
 # 4B - Compile a Mac version from source code:
-(note that if using Linux, you should instead follow the instructions in 3A)
+(note that if using Linux, you should instead follow the instructions in 4A)
 
 Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using one of the following two commands (note that the second command will compile a slightly reduced version of LDAK, that is unable to compute weightings)
 
