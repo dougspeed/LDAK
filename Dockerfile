@@ -3,7 +3,7 @@ FROM alpine:latest
 
 LABEL maintainer="Doug Speed and Jasper Hof" \
       description="Docker image for LDAK" \
-      version="6.1"
+      version="6.3"
 
 # Set working directory inside the container
 WORKDIR /output
@@ -15,7 +15,7 @@ ENV LDAK_RESOURCES=/Resources
 RUN mkdir -p $LDAK_RESOURCES
 
 # Copy your executables and resources
-COPY ldak6.1.linux /usr/local/bin/ldak
+COPY ldak6.3.linux /usr/local/bin/ldak
 COPY Resources/RefSeq_GRCh37.txt $LDAK_RESOURCES/RefSeq_GRCh37.txt
 COPY Resources/RefSeq_GRCh38.txt $LDAK_RESOURCES/RefSeq_GRCh38.txt
 COPY Resources/berisa.txt LDAK_RESOURCES/berisa.txt
