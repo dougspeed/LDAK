@@ -416,6 +416,7 @@ if(permute==-9999){permute=0;}
 if(mode==132)	//logistic
 {
 if(bychr==-9999){bychr=1;}
+if(sandwich==-9999){sandwich=0;}
 
 if(multi==-9999){multi=0;}
 
