@@ -24,6 +24,10 @@ if(dougvar==6){printf("wrong meta\n");}
 if(dougvar==7){printf("always sample res var\n");}
 if(dougvar==8){printf("purity filter\n");}
 if(dougvar==9){printf("no blank\n");}
+if(dougvar==10){printf("dopnt scale second\n");}
+
+
+if(dougvar2!=-9999){printf("scaling is %f\n", dougvar2);}
 
 
 //currently the correlations use five powers (and I do not plan to change this)
@@ -36,6 +40,9 @@ vargrid=malloc(sizeof(double)*num_grids);
 vargrid[0]=0;
 value=pow(grid_max/grid_min,1.0/(num_grids-2));
 for(k=1;k<num_grids;k++){vargrid[k]=grid_min*pow(value,k-1);}
+
+//set sscale to 1 (will overwrite if estimating)
+sscale=1;
 
 //set escale to one (will overwrite if using cv)
 escale=1.0;
@@ -590,6 +597,421 @@ rhos4=malloc(sizeof(double)*data_length);
 }
 if(num_sums3>1||metasum==1){cohers=malloc(sizeof(double)*num_cors*bittotal);}
 
+////////
+
+//get best power for focal trait (from the preset options) using sumher (without correction for bias) - will fudge if power provided
+
+rjksums2=malloc(sizeof(double)*data_length);
+snss=malloc(sizeof(double)*data_length);
+schis=malloc(sizeof(double)*data_length);
+stats=malloc(sizeof(double)*12*num_pows);
+likes=malloc(sizeof(double)*11*num_pows);
+svars=malloc(sizeof(double*));
+ssums=malloc(sizeof(double*));
+svars[0]=malloc(sizeof(double)*data_length);
+ssums[0]=malloc(sizeof(double)*3);
+
+if(noscale==0){printf("Testing five values for the power parameter (-1, -0.75, -0.5, -0.25 and 0), and estimating the inflation of test statistics\n");}
+else{printf("Testing five values for the power parameter (-1, -0.75, -0.5, -0.25 and 0)\n");}
+
+for(k=0;k<num_pows;k++)	//solve for kth power and extract likelihood - have not yet imputed, so might be missing values
+{
+ssums[0][0]=0;ssums[0][1]=data_length;ssums[0][2]=1;
+count=0;
+for(j=0;j<data_length;j++)
+{
+if(nss[j]>0)
+{
+rjksums2[count]=rjksums[j];
+snss[count]=nss[j];
+schis[count]=chis[j];
+if(schis[count]<1e-6){schis[count]=1e-6;}
+if(schis[count]>100){schis[count]=100;}
+svars[0][count]=rjksums[j+k*data_length];
+if(hwestand==1){ssums[0][0]+=weights[j]*pow(centres[j]*(1-centres[j]/2),1+powers[k]);}
+else{ssums[0][0]+=weights[j]*pow(sqdevs[j],1+powers[k]);}
+count++;
+}
+}
+
+if(noscale==0){solve_sums(stats+k*12, likes+k*11, NULL, NULL, NULL, 1, 1, 0, -9999, count, 0, NULL, NULL, rjksums2, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);}
+else{solve_sums(stats+k*12, likes+k*11, NULL, NULL, NULL, 1, 0, 0, -9999, count, 0, NULL, NULL, rjksums2, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);}
+}
+
+best=0;
+for(k=1;k<num_pows;k++)
+{
+if(likes[1+k*11]>likes[1+best*11]){best=k;}
+}
+
+if(power!=-9999)    //compare with provided value, and reset best
+{
+if(powers[best]!=power){printf("Warning, the best-fitting power is %.2f, which does not match the value provided (%.2f)\n\n", powers[best], power);}
+for(k=0;k<num_pows;k++)
+{
+if(powers[k]==power){best=k;break;}
+}
+}
+power=powers[best];
+
+if(noscale==1){printf("The best-fitting power is %.2f\n\n", power);}
+else    //scale focal, then secondary statistics
+{
+sscale=stats[1+best*12];
+printf("The best-fitting value is %.2f, while the estimated inflation is %f\n\n", power, sscale);
+if(sscale<0.8){printf("Warning, the scaling is very low, so has been increased to 0.8\n\n");sscale=0.8;}
+if(sscale>8){printf("Warning, the scaling is high low, so has been reduced to 8\n\n");sscale=8;}
+
+if(dougvar2!=-9999){sscale=dougvar2;}
+
+value=pow(sscale,-1);
+for(j=0;j<data_length;j++)
+{
+if(nss[j]>0)
+{
+chis[j]*=value;
+if(rhos[j]>0){rhos[j]=pow(chis[j]/(chis[j]+nss[j]),.5);}
+else{rhos[j]=-pow(chis[j]/(chis[j]+nss[j]),.5);}
+}
+}
+
+if(num_sums3>1&&dougvar!=10)
+{
+//read rjksums for best power for all correlations
+rjksums3=malloc(sizeof(double)*data_length*num_cors);
+
+for(s=0;s<num_cors;s++)
+{
+sprintf(filename2,"%s.cors.bin", corstems[s]);
+if((input2=fopen(filename2,"rb"))==NULL)
+{printf("Error re-opening %s\n\n",filename2);exit(1);}
+
+for(j=0;j<data_length;j++){rjksums3[j+s*data_length]=0;}
+for(j=0;j<Dnp2[s];j++)
+{
+fseeko(input2, sizeof(double)*Dnp[s]*(3+best)+sizeof(double)*Dkp[s][j], SEEK_SET);
+if(fread(rjksums3+Dkp2[s][j]+s*data_length, sizeof(double), 1, input2)!=1)
+{printf("Error reading Tagging %d for Predictor %d from %s\n\n", best+1, j+1, filename2);exit(1);}
+}
+
+fclose(input2);
+}
+
+//estimate scaling and scale
+for(q=1;q<num_sums3;q++)
+{
+//values of ssums do not matter as only care about scaling
+ssums[0][0]=1;ssums[0][1]=data_length;ssums[0][2]=1;
+count=0;
+for(j=0;j<data_length;j++)
+{
+if(Mnss[q][j]>0)
+{
+rjksums2[count]=rjksums[j];
+snss[count]=Mnss[q][j];
+schis[count]=Mchis[q][j];
+if(schis[count]<1e-6){schis[count]=1e-6;}
+if(schis[count]>100){schis[count]=100;}
+svars[0][count]=rjksums3[j+sumpops[q]*data_length];
+count++;
+}
+}
+
+solve_sums(stats, likes, NULL, NULL, NULL, 1, 1, 0, -9999, count, 0, NULL, NULL, rjksums2, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);
+sscale2=stats[1];
+
+if(sscale2<0.8){printf("Warning, the scaling is very low, so has been increased to 0.8\n\n");sscale2=0.8;}
+if(sscale2>8){printf("Warning, the scaling is high low, so has been reduced to 8\n\n");sscale2=8;}
+
+value=pow(sscale2,-1);
+for(j=0;j<data_length;j++)
+{
+if(Mnss[q][j]>0)
+{
+Mchis[q][j]*=value;
+if(Mrhos[q][j]>0){Mrhos[q][j]=pow(Mchis[q][j]/(Mchis[q][j]+Mnss[q][j]),.5);}
+else{Mrhos[q][j]=-pow(Mchis[q][j]/(Mchis[q][j]+Mnss[q][j]),.5);}
+}
+}
+}
+
+free(rjksums3);
+}
+}
+
+free(rjksums2);free(snss);free(schis);free(stats);free(likes);
+free(svars[0]);free(svars);free(ssums[0]);free(ssums);
+
+///////////////////////
+
+if(her!=-9999)	//have her (and power), so only need to fill exps
+{
+if(strcmp(indhers,"blank")!=0)	//exps are stored in weights (and they sum to one)
+{
+for(j=0;j<data_length;j++){exps[j]=weights[j];}
+}
+else	//must have simple case (no partitions)
+{
+for(j=0;j<data_length;j++)
+{
+if(hwestand==1){exps[j]=weights[j]*pow(centres[j]*(1-centres[j]/2),1+power);}
+else{exps[j]=weights[j]*pow(sqdevs[j],1+power);}
+}
+
+sum=0;for(j=0;j<data_length;j++){sum+=exps[j];}
+for(j=0;j<data_length;j++){exps[j]=exps[j]/sum;}
+}
+}
+else    //estimate heritability for focal trait using sumher - have not yet imputed, so might be missing values
+{
+printf("Estimating heritability using an approximate version of SumHer\n");
+total=num_parts+addpart;
+
+//taggings require dl x (2 + total) while sum_hers require dl x (3 + 2 x total)
+value=(double)data_length/1024*(5+3*total)/1024/1024*8;
+if(value>1){printf("Warning, to store the taggings requires %.1f Gb\n", value);}
+printf("\n");
+
+exps2=malloc(sizeof(double)*data_length);
+pweights2=malloc(sizeof(double)*bitmax*total);
+cors3=malloc(sizeof(double)*bitmax*total);
+
+snss=malloc(sizeof(double)*data_length);
+schis=malloc(sizeof(double)*data_length);
+stats=malloc(sizeof(double)*(total+2+total)*3);
+stats2=malloc(sizeof(double)*12);
+
+svars=malloc(sizeof(double*)*total);
+ssums=malloc(sizeof(double*)*total);
+for(q=0;q<total;q++)
+{
+svars[q]=malloc(sizeof(double)*data_length);
+ssums[q]=malloc(sizeof(double)*(total+2));
+}
+
+svars2=malloc(sizeof(double*));
+ssums2=malloc(sizeof(double*));
+svars2[0]=malloc(sizeof(double)*data_length);
+ssums2[0]=malloc(sizeof(double)*3);
+
+//load up exps2, making sure it sums to one
+for(j=0;j<data_length;j++)
+{
+if(hwestand==1){exps2[j]=weights[j]*pow(centres[j]*(1-centres[j]/2),1+power);}
+else{exps2[j]=weights[j]*pow(sqdevs[j],1+power);}
+}
+
+sum=0;for(j=0;j<data_length;j++){sum+=exps2[j];}
+value=pow(sum,-1);
+for(j=0;j<data_length;j++){exps2[j]*=value;}
+
+//re-open focal correlations
+s=sumpops[0];
+
+sprintf(filename2,"%s.cors.bin", corstems[s]);
+if((input2=fopen(filename2,"rb"))==NULL)
+{printf("Error re-opening %s\n\n",filename2);exit(1);}
+
+count=0;
+for(bit=0;bit<bittotal;bit++)
+{
+bitstart=blockstarts[bit];
+bitend=blockends[bit];
+bitlength=blockends[bit]-blockstarts[bit];
+
+if(bit%100==0)
+{
+printf("Calculating taggings for Window %d of %d\n", bit+1, bittotal);
+
+sprintf(filename,"%s.progress",outfile);
+if((output=fopen(filename,"a"))==NULL)
+{printf("Error re-opening %s\n\n",filename);exit(1);}
+fprintf(output,"Calculating taggings for Window %d of %d\n", bit+1, bittotal);
+fclose(output);
+}
+
+//read lower triangle of focal correlations
+fseeko(input2, Dindexes[s][bit], SEEK_SET);
+for(k=0;k<Dsizes[s][bit][0]-1;k++)
+{
+count2=fread(cors_short+(size_t)k*Dsizes[s][bit][0]+k+1, sizeof(unsigned short), Dsizes[s][bit][0]-k-1, input2);
+if(count2!=Dsizes[s][bit][0]-k-1)
+{printf("Error reading correlations for Window %d from %s\n\n", bit+1, filename2);exit(1);}
+}
+
+//now extract squared correlations, correcting off-diagonals for sample size (no need for signs, and not using shrink)
+value=(double)(Dns[s]-1)/(Dns[s]-2);
+value2=pow(Dns[s]-2,-1);
+#pragma omp parallel for private(k,j) schedule(static)
+for(k=0;k<bitlength;k++)
+{
+cors[(size_t)k*bitlength+k]=1.0;
+for(j=k+1;j<bitlength;j++)
+{cors[(size_t)k*bitlength+j]=pow(0.00005*cors_short[(size_t)Duse[s][bit][k]*Dsizes[s][bit][0]+Duse[s][bit][j]]-1,2)*value-value2;}
+}
+
+//load up annotations for this bit
+for(q=0;q<total;q++)
+{
+for(j=0;j<bitlength;j++){pweights2[j+q*bitlength]=pweights[q][bitstart+j]*exps2[bitstart+j];}
+}
+
+//get cors x pweights2
+alpha=1.0;beta=0.0;
+dsymm_("L", "L", &bitlength, &total, &alpha, cors, &bitlength, pweights2, &bitlength, &beta, cors3, &bitlength);
+
+//copy cors3 into svars allowing for missing values
+for(j=0;j<bitlength;j++)
+{
+if(nss[bitstart+j]>0)
+{
+for(q=0;q<total;q++){svars[q][count]=cors3[j+q*bitlength];}
+count++;
+}
+}
+}	//end of bit loop
+printf("\n");
+
+fclose(input2);
+
+//get ssums
+for(q=0;q<total;q++)
+{
+//ssums[q][q2]indicates how much q2 contributes to q
+for(q2=0;q2<total;q2++){ssums[q][q2]=0;}
+//ssums[q][total] is the number of snps in category q
+ssums[q][total]=0;
+
+for(j=0;j<data_length;j++)
+{
+if(pindexes[q][j]==1)	//add on contribution from q2, then increase tally
+{
+for(q2=0;q2<total;q2++){ssums[q][q2]+=pweights[q2][j]*exps2[j];}
+ssums[q][total]++;
+}
+}
+
+//ssums[q][total+1] is the proportion of snps in category q
+ssums[q][total+1]=ssums[q][total]/data_length;
+}
+
+//load up stats, allowing for missing values and ensuring not too big or small
+count2=0;
+for(j=0;j<data_length;j++)
+{
+if(nss[j]>0)
+{
+snss[count2]=nss[j];
+schis[count2]=chis[j];
+if(schis[count2]<1e-6){schis[count2]=1e-6;}
+if(schis[count2]>100){schis[count2]=100;}
+count2++;
+}
+}
+
+if(count!=count2){printf("Doug Error 722BB %d and %d\n\n", count, count2);exit(1);}
+
+if(total==1||parttype==1)	//solve directly
+{solve_sums(stats, NULL, NULL, NULL, NULL, 1, 0, 0, -9999, count, 0, NULL, NULL, rjksums, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);}
+else
+{
+//solve first for base
+for(j=0;j<data_length;j++){svars2[0][j]=svars[total-1][j];}
+ssums2[0][0]=ssums[total-1][total-1];
+ssums2[0][1]=ssums[total-1][total];
+ssums2[0][2]=ssums[total-1][total+1];
+
+solve_sums(stats2, NULL, NULL, NULL, NULL, 1, 0, 0, -9999, count, 0, NULL, NULL, rjksums, svars2, ssums2, snss, schis, 0.001, 100, 1, 7, NULL);
+
+//load coefficients into stats and solve for full model
+for(q=0;q<total;q++){stats[q]=0;}
+stats[total-1]=stats2[0];
+solve_sums(stats, NULL, NULL, NULL, NULL, total, 0, 0, -9999, count, 0, NULL, NULL, rjksums, svars, ssums, snss, schis, 0.001, 100, 1, 8, NULL);
+}
+
+//save enrichments
+if(num_focals==1){sprintf(filename2,"%s.enrich",outfile);}
+else{sprintf(filename2,"%s.focal%d.enrich", outfile, cur_focal+1);}
+if((output2=fopen(filename2,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
+fprintf(output2, "Component Share Expected Enrichment\n");
+
+for(q=0;q<total;q++)
+{
+if(parttype==0&&q<total-1){fprintf(output2,"Enrich_A%d ",q+1);}
+if(parttype==0&&q==total-1){fprintf(output2,"Enrich_Base ");}
+if(parttype==1){fprintf(output2,"Enrich_P%d ",q+1);}
+
+fprintf(output2,"%.6f %.6f %.6f\n", stats[total+1+q]/stats[total], ssums[q][total+1], stats[total+1+q]/stats[total]/ssums[q][total+1]);
+}
+fclose(output2);
+
+//set exps to zero, then add on contributions from each category
+for(j=0;j<data_length;j++){exps[j]=0;}
+for(q=0;q<total;q++)	//contribution of category q must sum to its heritability (stored in stats[q])
+{
+if(stats[q]!=0)
+{
+sum=0;for(j=0;j<data_length;j++){sum+=pweights[q][j]*exps2[j];}
+for(j=0;j<data_length;j++){exps[j]+=pweights[q][j]*exps2[j]/sum*stats[q];}
+}
+}
+
+//get heritability
+her=0;for(j=0;j<data_length;j++){her+=exps[j];}
+printf("Estimated heritability is %.4f\n", her);
+if(her<0.01){printf("Warning, this is very low, so has been increased to 0.01\n");her=0.01;}
+//if(her>maxher){printf("Warning, this is very high, so has been reduced to %.4f\n", maxher);her=maxher;}
+printf("\n");
+
+//force negative exps to be something small
+for(j=0;j<data_length;j++)
+{
+if(exps[j]<0){exps[j]=1e-16;}
+}
+
+//make exps sum to one
+sum=0;for(j=0;j<data_length;j++){sum+=exps[j];}
+for(j=0;j<data_length;j++){exps[j]=exps[j]/sum;}
+
+//ensure no tiny values
+value=minher/data_length;
+count=0;
+for(j=0;j<data_length;j++)
+{
+if(exps[j]<value){exps[j]=value;count++;}
+}
+if(count>0){printf("Warning, %d of the per-predictor heritabilities were negative or very small (so have been set to %.4f times the average value; change this threshold using \"--min-her\")\n\n", count, minher);}
+
+//ensure exps still sum to one
+sum=0;for(j=0;j<data_length;j++){sum+=exps[j];}
+for(j=0;j<data_length;j++){exps[j]=exps[j]/sum;}
+
+free(exps2);free(pweights2);free(cors3);
+free(snss);free(schis);free(stats);free(stats2);
+for(q=0;q<total;q++){free(svars[q]);free(ssums[q]);}free(svars);free(ssums);
+free(svars2[0]);free(svars2);free(ssums2[0]);free(ssums2);
+}	//end of estimating heritability
+
+//save her, power and inflation
+if(num_focals==1){sprintf(filename2,"%s.arch",outfile);}
+else{sprintf(filename2,"%s.focal%d.arch", outfile, cur_focal+1);}
+if((output2=fopen(filename2,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
+fprintf(output2, "Heritability %.4f\nPower %.4f\nInflation %.4f\n", her, power, sscale);
+fclose(output2);
+
+//save per-predictor heritabilities
+if(num_focals==1){sprintf(filename2,"%s.ind.hers",outfile);}
+else{sprintf(filename2,"%s.focal%d.ind.hers", outfile, cur_focal+1);}
+if((output2=fopen(filename2,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
+fprintf(output2, "Predictor Heritability\n");
+for(j=0;j<data_length;j++){fprintf(output2, "%s %.6e\n", preds[j], exps[j]*her);}
+fclose(output2);
+
+////////
+
 if(impsums==1)  //impute missing summary statistic for focal trait (if necessary)
 {
 count=0;for(j=0;j<data_length;j++){count+=(nss[j]==0);}
@@ -600,6 +1022,7 @@ else{printf("Imputing summary statistics for (up to) %d predictors for focal tra
 
 if(metasum==0){impute_sums(0, Mnss, Mrhos, Mchis, data_length, bittotal, blockstarts, blockends, sumpops[0], NULL, corstems, -9999, Dindexes, Dsizes, Duse, Duse2, Dsigns, shrink, outfile, cors_short, cors, preds);}
 else{impute_sums(0, Mnss, Mrhos, Mchis, data_length, bittotal, blockstarts, blockends, sumpops[0], cohers2, corstems, num_cors, Dindexes, Dsizes, Duse, Duse2, Dsigns, shrink, outfile, cors_short, cors, preds);}
+}
 }
 
 if(num_focals==1){sprintf(filename2,"%s.imputed",outfile);}
@@ -618,53 +1041,8 @@ fprintf(output2,"%s\t%c\t%c\t%.4f\t%.0f\n", preds[j], al1[j], al2[j], value, Mns
 }
 }
 fclose(output2);
-}
 
-if(power==-9999)	//get best power for focal trait (from the preset options) using sumher (without correction for bias)
-{
-rjksums2=malloc(sizeof(double)*data_length);
-snss=malloc(sizeof(double)*data_length);
-schis=malloc(sizeof(double)*data_length);
-stats=malloc(sizeof(double)*3*3);
-likes=malloc(sizeof(double)*11*num_pows);
-
-svars=malloc(sizeof(double*));
-ssums=malloc(sizeof(double*));
-svars[0]=malloc(sizeof(double)*data_length);
-ssums[0]=malloc(sizeof(double)*3);
-
-printf("Testing five values for the power parameter (-1, -0.75, -0.5, -0.25 and 0)\n");
-for(k=0;k<num_pows;k++)	//solve for kth power and extract likelihood (must fill ssums, but values do not matter)
-{
-count=0;
-for(j=0;j<data_length;j++)
-{
-rjksums2[count]=rjksums[j];
-snss[count]=nss[j];
-schis[count]=chis[j];
-if(schis[count]<1e-6){schis[count]=1e-6;}
-if(schis[count]>100){schis[count]=100;}
-svars[0][count]=rjksums[j+k*data_length];
-count++;
-}
-ssums[0][0]=1;ssums[0][1]=1;ssums[0][2]=1;
-
-solve_sums(stats, likes+k*11, NULL, NULL, NULL, 1, 0, 0, -9999, count, 0, NULL, NULL, rjksums2, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);
-}
-
-best=0;
-for(k=1;k<num_pows;k++)
-{
-if(likes[1+k*11]>likes[1+best*11]){best=k;}
-}
-power=powers[best];
-printf("The best-fitting value is %.2f\n\n", power);
-
-free(rjksums2);free(snss);free(schis);free(stats);free(likes);
-free(svars[0]);free(svars);free(ssums[0]);free(ssums);
-}
-
-////////
+///////////////////////
 
 if(skipcv==0)   //deal with pseudos - only need nss2, rhos2 and rhos3 (not nss3 or chis2 / chis3)
 {
@@ -742,255 +1120,6 @@ else	//not using highlds (set highlds to 0, but probably unnecesary)
 for(j=0;j<data_length;j++){highlds[j]=0;}
 }
 
-///////////////////////
-
-if(her!=-9999)	//have her (and power), so only need to fill exps
-{
-if(strcmp(indhers,"blank")!=0)	//exps are stored in weights (and they sum to one)
-{
-for(j=0;j<data_length;j++){exps[j]=weights[j];}
-}
-else	//must have simple case (no partitions)
-{
-for(j=0;j<data_length;j++)
-{
-if(hwestand==1){exps[j]=weights[j]*pow(centres[j]*(1-centres[j]/2),1+power);}
-else{exps[j]=weights[j]*pow(sqdevs[j],1+power);}
-}
-
-sum=0;for(j=0;j<data_length;j++){sum+=exps[j];}
-for(j=0;j<data_length;j++){exps[j]=exps[j]/sum;}
-}
-}
-else    //estimate heritability for focal trait using sumher (with gcon=gcept=0, and with correlations and summary statistics for all predictors)
-{
-printf("Estimating heritability using an approximate version of SumHer\n");
-total=num_parts+addpart;
-
-//taggings require dl x (2 + total) while sum_hers require dl x (3 + 2 x total)
-value=(double)data_length/1024*(5+3*total)/1024/1024*8;
-if(value>1){printf("Warning, to store the taggings requires %.1f Gb\n", value);}
-printf("\n");
-
-exps2=malloc(sizeof(double)*data_length);
-pweights2=malloc(sizeof(double)*bitmax*total);
-cors3=malloc(sizeof(double)*bitmax*total);
-
-snss=malloc(sizeof(double)*data_length);
-schis=malloc(sizeof(double)*data_length);
-stats=malloc(sizeof(double)*(total+1+total)*3);
-stats2=malloc(sizeof(double)*3);
-
-svars=malloc(sizeof(double*)*total);
-ssums=malloc(sizeof(double*)*total);
-for(q=0;q<total;q++)
-{
-svars[q]=malloc(sizeof(double)*data_length);
-ssums[q]=malloc(sizeof(double)*(total+2));
-}
-
-svars2=malloc(sizeof(double*));
-ssums2=malloc(sizeof(double*));
-svars2[0]=malloc(sizeof(double)*data_length);
-ssums2[0]=malloc(sizeof(double)*3);
-
-//load up exps2, making sure it sums to one
-for(j=0;j<data_length;j++)
-{
-if(hwestand==1){exps2[j]=weights[j]*pow(centres[j]*(1-centres[j]/2),1+power);}
-else{exps2[j]=weights[j]*pow(sqdevs[j],1+power);}
-}
-
-sum=0;for(j=0;j<data_length;j++){sum+=exps2[j];}
-value=pow(sum,-1);
-for(j=0;j<data_length;j++){exps2[j]*=value;}
-
-//load up stats, ensuring not too big or small
-for(j=0;j<data_length;j++)
-{
-snss[j]=nss[j];
-schis[j]=chis[j];
-if(schis[j]<1e-6){schis[j]=1e-6;}
-if(schis[j]>100){schis[j]=100;}
-}
-
-//re-open focal correlations
-s=sumpops[0];
-
-sprintf(filename2,"%s.cors.bin", corstems[s]);
-if((input2=fopen(filename2,"rb"))==NULL)
-{printf("Error re-opening %s\n\n",filename2);exit(1);}
-
-for(bit=0;bit<bittotal;bit++)
-{
-bitstart=blockstarts[bit];
-bitend=blockends[bit];
-bitlength=blockends[bit]-blockstarts[bit];
-
-if(bit%100==0)
-{
-printf("Calculating taggings for Window %d of %d\n", bit+1, bittotal);
-
-sprintf(filename,"%s.progress",outfile);
-if((output=fopen(filename,"a"))==NULL)
-{printf("Error re-opening %s\n\n",filename);exit(1);}
-fprintf(output,"Calculating taggings for Window %d of %d\n", bit+1, bittotal);
-fclose(output);
-}
-
-//read lower triangle of focal correlations
-fseeko(input2, Dindexes[s][bit], SEEK_SET);
-for(k=0;k<Dsizes[s][bit][0]-1;k++)
-{
-count2=fread(cors_short+(size_t)k*Dsizes[s][bit][0]+k+1, sizeof(unsigned short), Dsizes[s][bit][0]-k-1, input2);
-if(count2!=Dsizes[s][bit][0]-k-1)
-{printf("Error reading correlations for Window %d from %s\n\n", bit+1, filename2);exit(1);}
-}
-
-//now extract squared correlations, correcting off-diagonals for sample size (no need for signs, and not using shrink)
-value=(double)(Dns[s]-1)/(Dns[s]-2);
-value2=pow(Dns[s]-2,-1);
-#pragma omp parallel for private(k,j) schedule(static)
-for(k=0;k<bitlength;k++)
-{
-cors[(size_t)k*bitlength+k]=1.0;
-for(j=k+1;j<bitlength;j++)
-{cors[(size_t)k*bitlength+j]=pow(0.00005*cors_short[(size_t)Duse[s][bit][k]*Dsizes[s][bit][0]+Duse[s][bit][j]]-1,2)*value-value2;}
-}
-
-//load up annotations for this bit
-for(q=0;q<total;q++)
-{
-for(j=0;j<bitlength;j++){pweights2[j+q*bitlength]=pweights[q][bitstart+j]*exps2[bitstart+j];}
-}
-
-//get cors x pweights2
-alpha=1.0;beta=0.0;
-dsymm_("L", "L", &bitlength, &total, &alpha, cors, &bitlength, pweights2, &bitlength, &beta, cors3, &bitlength);
-
-//copy values into svars (bit silly)
-for(q=0;q<total;q++)
-{
-for(j=0;j<bitlength;j++){svars[q][bitstart+j]=cors3[j+q*bitlength];}
-}
-}	//end of bit loop
-printf("\n");
-
-fclose(input2);
-
-//get ssums
-for(q=0;q<total;q++)
-{
-//ssums[q][q2]indicates how much q2 contributes to q
-for(q2=0;q2<total;q2++){ssums[q][q2]=0;}
-//ssums[q][total] is the number of snps in category q
-ssums[q][total]=0;
-
-for(j=0;j<data_length;j++)
-{
-if(pindexes[q][j]==1)	//add on contribution from q2, then increase tally
-{
-for(q2=0;q2<total;q2++){ssums[q][q2]+=pweights[q2][j]*exps2[j];}
-ssums[q][total]++;
-}
-}
-
-//ssums[q][total+1] is the proportion of snps in category q
-ssums[q][total+1]=ssums[q][total]/data_length;
-}
-
-if(total==1||parttype==1)	//solve directly
-{solve_sums(stats, NULL, NULL, NULL, NULL, total, 0, 0, -9999, data_length, 0, NULL, NULL, rjksums, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);}
-else
-{
-//solve first for base
-for(j=0;j<data_length;j++){svars2[0][j]=svars[total-1][j];}
-ssums2[0][0]=ssums[total-1][total-1];
-ssums2[0][1]=ssums[total-1][total];
-ssums2[0][2]=ssums[total-1][total+1];
-solve_sums(stats2, NULL, NULL, NULL, NULL, 1, 0, 0, -9999, data_length, 0, NULL, NULL, rjksums, svars2, ssums2, snss, schis, 0.001, 100, 1, 7, NULL);
-
-//load coefficients into stats and solve for full model
-for(q=0;q<total;q++){stats[q]=0;}
-stats[total-1]=stats2[0];
-solve_sums(stats, NULL, NULL, NULL, NULL, total, 0, 0, -9999, data_length, 0, NULL, NULL, rjksums, svars, ssums, snss, schis, 0.001, 100, 1, 8, NULL);
-}
-
-//save enrichments
-if(num_focals==1){sprintf(filename2,"%s.enrich",outfile);}
-else{sprintf(filename2,"%s.focal%d.enrich", outfile, cur_focal+1);}
-if((output2=fopen(filename2,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
-fprintf(output2, "Component Share Expected Enrichment\n");
-
-for(q=0;q<total;q++)
-{
-if(parttype==0&&q<total-1){fprintf(output2,"Enrich_A%d ",q+1);}
-if(parttype==0&&q==total-1){fprintf(output2,"Enrich_Base ");}
-if(parttype==1){fprintf(output2,"Enrich_P%d ",q+1);}
-
-fprintf(output2,"%.6f %.6f %.6f\n", stats[total+1+q]/stats[total], ssums[q][total+1], stats[total+1+q]/stats[total]/ssums[q][total+1]);
-}
-fclose(output2);
-
-//set exps to zero, then add on contributions from each category
-for(j=0;j<data_length;j++){exps[j]=0;}
-for(q=0;q<total;q++)	//contribution of category q must sum to its heritability (stored in stats[q])
-{
-if(stats[q]!=0)
-{
-sum=0;for(j=0;j<data_length;j++){sum+=pweights[q][j]*exps2[j];}
-for(j=0;j<data_length;j++){exps[j]+=pweights[q][j]*exps2[j]/sum*stats[q];}
-}
-}
-
-//get heritability
-her=0;for(j=0;j<data_length;j++){her+=exps[j];}
-printf("Estimated heritability is %.4f\n", her);
-if(her<0.01){printf("Warning, this is very low, so has been increased to 0.01\n");her=0.01;}
-if(her>maxher){printf("Warning, this is very high, so has been reduced to %.4f\n", maxher);her=maxher;}
-printf("\n");
-
-//force negative exps to be something small
-for(j=0;j<data_length;j++)
-{
-if(exps[j]<0){exps[j]=1e-16;}
-}
-
-//make exps sum to one
-sum=0;for(j=0;j<data_length;j++){sum+=exps[j];}
-for(j=0;j<data_length;j++){exps[j]=exps[j]/sum;}
-
-//ensure no tiny values
-value=minher/data_length;
-count=0;
-for(j=0;j<data_length;j++)
-{
-if(exps[j]<value){exps[j]=value;count++;}
-}
-if(count>0){printf("Warning, %d of the per-predictor heritabilities were negative or very small (so have been set to %.4f times the average value; change this threshold using \"--min-her\")\n\n", count, minher);}
-
-//ensure exps still sum to one
-sum=0;for(j=0;j<data_length;j++){sum+=exps[j];}
-for(j=0;j<data_length;j++){exps[j]=exps[j]/sum;}
-
-free(exps2);free(pweights2);free(cors3);
-free(snss);free(schis);free(stats);free(stats2);
-for(q=0;q<total;q++){free(svars[q]);free(ssums[q]);}free(svars);free(ssums);
-free(svars2[0]);free(svars2);free(ssums2[0]);free(ssums2);
-}	//end of estimating heritability
-
-if(strcmp(indhers,"blank")==0)	//save per-predictor heritabilities
-{
-if(num_focals==1){sprintf(filename2,"%s.ind.hers",outfile);}
-else{sprintf(filename2,"%s.focal%d.ind.hers", outfile, cur_focal+1);}
-if((output2=fopen(filename2,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
-fprintf(output2, "Predictor Heritability\n");
-for(j=0;j<data_length;j++){fprintf(output2, "%s %.6e\n", preds[j], exps[j]*her);}
-fclose(output2);
-}
-
 ////////
 
 if(num_sums3>1)  //deal with extra traits, and impute if necessary (listens to dougvar 1 and 3)
@@ -1030,14 +1159,15 @@ cors2=malloc(sizeof(double)*bitmax*total);
 effs=malloc(sizeof(double)*data_length*total);
 effs2=malloc(sizeof(double)*bitmax*total);
 effs3=malloc(sizeof(double)*bitmax*total2);
-pars=malloc(sizeof(double)*bitmax*total);
 probs=malloc(sizeof(double)*data_length*num_try);
 probs2=malloc(sizeof(double)*bitmax*total2);
 probs3=malloc(sizeof(double)*bitmax*2);
-residuals=malloc(sizeof(double)*bitmax*total);
+if(finemap==0){residuals=malloc(sizeof(double)*bitsize*total);}
+else{residuals=malloc(sizeof(double)*bitmax*total);}
 ess=malloc(sizeof(double)*total);
 ess2=malloc(sizeof(double)*total);
 variances=malloc(sizeof(double)*total);
+pars=malloc(sizeof(double)*num_try);
 
 pmeans=malloc(sizeof(double)*bitmax*num_grids);
 pvars=malloc(sizeof(double)*bitmax*num_grids);
@@ -1134,7 +1264,6 @@ fclose(output);
 }
 
 //read correlations
-
 if(metasum==0||dougvar==6) //easy case - only using focal correlations
 {
 s=sumpops[0];
@@ -1202,11 +1331,21 @@ for(j=k+1;j<Dsizes[s][bit][1];j++)
 }}
 }
 
+//get average sample size
+sum=0;for(j=bitstart;j<bitend;j++){sum+=nss[j];}
+neff=sum/bitlength;
+
+if(resfix==0)   //compute rhosinvrhos
+{rhosinvrhos=cg_solve_lower_norm(cors, bitlength, rhos2+bitstart, 1e-6);}
+
 //put starting effects into effs2
 for(p=0;p<num_try;p++)
 {
 for(j=0;j<bitlength;j++){effs2[j+p*bitlength]=effs[(size_t)p*data_length+bitstart+j];}
 }
+
+//set variances to one
+for(p=0;p<num_try;p++){variances[p]=1.0;}
 
 //calculate ess for all models - equal to (2YTXbeta - t(beta) XTXbeta)/n
 alpha=1.0;beta=0.0;
@@ -1216,6 +1355,9 @@ for(p=0;p<num_try;p++){ess[p]=2*ddot_(&bitlength, effs2+p*bitlength, &one, rhos2
 
 for(count=0;count<maxiter;count++)
 {
+//set pars to zero
+for(p=0;p<num_try;p++){pars[p]=0;}
+
 for(bitstart2=bitstart;bitstart2<bitend;bitstart2+=bitsize)
 {
 bitend2=bitstart2+bitsize;
@@ -1256,19 +1398,19 @@ value2=pow(exps[j]*her,-.5);
 
 //get posterior mean
 if(trytypes[p]==1)	//lasso-sparse
-{postmean=get_postmean(sum, lambdas[p]*value2*nss2[j], -9999, -9999, -9999, nss2[j], 1.0, -9999, -9999, -9999, -9999, NULL, 1, NULL, NULL);}
+{postmean=get_postmean(sum, lambdas[p]*value2*nss2[j], -9999, -9999, -9999, nss2[j], variances[p], -9999, -9999, -9999, -9999, NULL, 1, NULL, pars+p);}
 if(trytypes[p]==2)	//lasso
-{postmean=get_postmean(sum, lambdas[p]*value2, -9999, -9999, -9999, nss2[j], 1.0, -9999, -9999, -9999, -9999, NULL, 2, NULL, NULL);}
+{postmean=get_postmean(sum, lambdas[p]*value2, -9999, -9999, -9999, nss2[j], variances[p], -9999, -9999, -9999, -9999, NULL, 2, NULL, pars+p);}
 if(trytypes[p]==3)	//ridge
-{postmean=get_postmean(sum, lambdas[p]*value, -9999, -9999, -9999, nss2[j], 1.0, -9999, -9999, -9999, -9999, NULL, 3, NULL, NULL);}
+{postmean=get_postmean(sum, lambdas[p]*value, -9999, -9999, -9999, nss2[j], variances[p], -9999, -9999, -9999, -9999, NULL, 3, NULL, pars+p);}
 if(trytypes[p]==4)	//bolt
-{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss2[j], 1.0, tryps[p], tryp2s[p], -9999, -9999, NULL, 4, NULL, NULL);}
+{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss2[j], variances[p], tryps[p], tryp2s[p], -9999, -9999, NULL, 4, NULL, pars+p);}
 if(trytypes[p]==5||trytypes[p]==6)	//bayesr or bayesr-shrink
-{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, lambdas3[p]*value, lambdas4[p]*value, nss2[j], 1.0, tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], NULL, trytypes[p], NULL, NULL);}
+{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, lambdas3[p]*value, lambdas4[p]*value, nss2[j], variances[p], tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], NULL, trytypes[p], NULL, pars+p);}
 if(trytypes[p]==7)	//elastic
-{postmean=get_postmean(sum, lambdas[p]*value2, lambdas2[p]*value2, lambdas3[p]*value, -9999, nss2[j], 1.0, tryps[p], tryp2s[p], tryp3s[p], -9999, NULL, 7, NULL, NULL);}
+{postmean=get_postmean(sum, lambdas[p]*value2, lambdas2[p]*value2, lambdas3[p]*value, -9999, nss2[j], variances[p], tryps[p], tryp2s[p], tryp3s[p], -9999, NULL, 7, NULL, pars+p);}
 if(trytypes[p]==8)	//ldpred (use bolt function)
-{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss2[j], 1.0, tryps[p], tryp2s[p], -9999, -9999, NULL, 4, NULL, NULL);}
+{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss2[j], variances[p], tryps[p], tryp2s[p], -9999, -9999, NULL, 4, NULL, pars+p);}
 
 //update residuals for remainder of block
 value3=postmean-effs2[j-bitstart+p*bitlength];
@@ -1286,18 +1428,28 @@ for(p=0;p<num_try;p++){ess2[p]=ess[p];}
 alpha=1.0;beta=0.0;
 dsymm_("L", "L", &bitlength, &num_try, &alpha, cors, &bitlength, effs2, &bitlength, &beta, cors2, &bitlength);
 
-for(p=0;p<num_try;p++){ess[p]=2*ddot_(&bitlength, effs2+p*bitlength, &one, rhos2+bitstart, &one)-ddot_(&bitlength, effs2+p*bitlength, &one, cors2+p*bitlength, &one);
-}
+for(p=0;p<num_try;p++){ess[p]=2*ddot_(&bitlength, effs2+p*bitlength, &one, rhos2+bitstart, &one)-ddot_(&bitlength, effs2+p*bitlength, &one, cors2+p*bitlength, &one);}
 
 //see whether converged
 cflag=0;for(p=0;p<num_try;p++){cflag+=(fabs(ess[p]-ess2[p])<tol);}
 if(cflag==num_try){break;}
+
+if(resfix==0)   //update variance based on expected distribution of rho, assuming prior dist prop to variance^-1.5 (do not allow to go below one)
+{
+for(p=0;p<num_try;p++) 
+{
+//need t(rhos) inv(cors) rhos - 2 t(rhos) beta + t(beta) cors beta + variances (terms 2 and 3 equal -ess, computed just above)
+sum=rhosinvrhos-ess[p]+pars[p];
+variances[p]=sum/bitlength*neff;
+if(variances[p]<1.0){variances[p]=1.0;}
+}
+}
 }	//end of count loop
 
 if(count==maxiter){printf("Warning, Window %d did not converge within %d iterations\n", bit+1, maxiter);}
 
 cflag=0;for(p=0;p<num_try;p++){cflag+=(ess[p]>1);}
-if(cflag==0)	//model(s) not terrible, so update effect sizes
+if(cflag==0)	//models not terrible, so update effect sizes
 {
 for(p=0;p<num_try;p++)
 {
@@ -1366,7 +1518,7 @@ if(best==-1)	//not possible to compute a correlation for any models
 escale=pow(predvars[best+best*num_try],-.5);
 if(dougvar==5){escale=1;}
 
-//save correlations
+//save accuracies
 if(num_focals==1){sprintf(filename2,"%s.cors",outfile);}
 else{sprintf(filename2,"%s.focal%d.cors", outfile, cur_focal+1);}
 if((output2=fopen(filename2,"w"))==NULL)
@@ -1484,7 +1636,8 @@ if(pritraits[q]==1&&sumpops[q]!=sumpops[0]){pflag=1;break;}
 else    //assume we are (might be wrong)
 {pflag=1;}
 
-if(finemap==0) //work out how many models we are constructing
+//work out how many models we are constructing
+if(finemap==0) //can be many
 {
 if(skipcv==0&&megasave==0)	//will reduce to models with positive weight
 {
@@ -1542,24 +1695,6 @@ fprintf(output,"Estimating effect sizes and posterior inclusion probabilities\n"
 fclose(output);
 }
 
-if(condition==1)    //open clumping file
-{
-if(num_focals==1){sprintf(filename3,"%s.conditional",outfile);}
-else{sprintf(filename3,"%s.focal%d.conditional", outfile, cur_focal+1);}
-if((output3=fopen(filename3,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename3);exit(1);}
-fprintf(output3,"Predictor Chromosome Basepair Conditional_P Original_P\n");
-}
-
-if(finemap==1)  //open credible set files
-{
-if(num_focals==1){sprintf(filename4,"%s.credibles",outfile);}
-else{sprintf(filename4,"%s.focal%d.credibles", outfile, cur_focal+1);}
-if((output4=fopen(filename4,"w"))==NULL)
-{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename4);exit(1);}
-fprintf(output4,"Set PIP Size Min_P Purity Predictors\n");
-}
-
 //get XTY for each predictor
 for(j=0;j<data_length;j++){YTdata[j]=rhos[j]*nss[j];}
 
@@ -1605,6 +1740,24 @@ for(j=0;j<data_length;j++){effs[j]=0;}
 for(p=0;p<num_left;p++)
 {
 for(j=0;j<data_length;j++){probs[(size_t)p*data_length+j]=0;}
+}
+
+if(condition==1)    //open clumping file
+{
+if(num_focals==1){sprintf(filename3,"%s.conditional",outfile);}
+else{sprintf(filename3,"%s.focal%d.conditional", outfile, cur_focal+1);}
+if((output3=fopen(filename3,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename3);exit(1);}
+fprintf(output3,"Predictor Chromosome Basepair Conditional_P Original_P\n");
+}
+
+if(finemap==1)  //open credible set files
+{
+if(num_focals==1){sprintf(filename4,"%s.credibles",outfile);}
+else{sprintf(filename4,"%s.focal%d.credibles", outfile, cur_focal+1);}
+if((output4=fopen(filename4,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename4);exit(1);}
+fprintf(output4,"Set PIP Size Min_P Purity Predictors\n");
 }
 
 ecount=0;
@@ -1716,25 +1869,25 @@ neff=sum/bitlength;
 //get sum of effs
 sumexps=0;for(j=bitstart;j<bitend;j++){sumexps+=exps[j];}
 
+if(resfix==0)   //compute rhosinvrhos
+{rhosinvrhos=cg_solve_lower_norm(cors, bitlength, rhos+bitstart, 1e-6);}
+
 if(condition==1)    //perform conditional analysis
 {
 #include "clump.c"
 }
 
-//set rhosinvrhos to missing (will compute when required)
-rhosinvrhos=-9999;
-
 //flag=0 means that we will do vb
 flag=mcmcfinal;
 
-if(mcmcfinal==1)	//first try fixed number of iterations, then save means (must have finemap=0)
+if(mcmcfinal==1)	//first try fixed number of iterations, then save means (can not have trytype=7
 {
 total=num_left*num_chains;
 
 //use effs2 and probs2 to store sums of effect sizes and probs for each model / chain
-for(p2=0;p2<total;p2++)
+for(p=0;p<total;p++)
 {
-for(j=0;j<bitlength;j++){effs2[j+p2*bitlength]=0;probs2[j+p2*bitlength]=0;}
+for(j=0;j<bitlength;j++){effs2[j+p*bitlength]=0;probs2[j+p*bitlength]=0;}
 }
 
 //put starting effects into effs3
@@ -1774,7 +1927,7 @@ if(token2>0)	//right rectangle - from bitend2 to bitend
 for(j=0;j<128*total;j++){manyrands[j]=genrand_real1();}
 
 //first do gaussian-only models - can use pragma
-#pragma omp parallel for private(p2,p,start,j,j2,j3,sum,value,postmean,postprob,postsamp,value3) schedule(dynamic)
+#pragma omp parallel for private(p2,p,start,j,j2,sum,value,postmean,postprob,postsamp,value3) schedule(dynamic)
 for(p2=0;p2<total;p2++)
 {
 p=p2/num_chains;
@@ -1793,13 +1946,13 @@ value=exps[j]*her;
 
 //get posterior mean and sampling
 if(trytypes[p]==3)	//ridge
-{postmean=get_postsamp_pragma(sum, lambdas[p]*value, -9999, -9999, -9999, nss[j], variances[p2], -9999, -9999, -9999, -9999, 3, &postprob, &postsamp, manyrands+p2*128, &start);}
+{postmean=get_postsamp_pragma(sum, lambdas[p]*value, -9999, -9999, -9999, nss[j], variances[p2], -9999, -9999, -9999, -9999, 3, &postprob, &postsamp, manyrands+p2*128, &start, NULL);}
 if(trytypes[p]==4)	//bolt
-{postmean=get_postsamp_pragma(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p2], tryps[p], tryp2s[p], -9999, -9999, 4, &postprob, &postsamp, manyrands+p2*128, &start);}
+{postmean=get_postsamp_pragma(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p2], tryps[p], tryp2s[p], -9999, -9999, 4, &postprob, &postsamp, manyrands+p2*128, &start, NULL);}
 if(trytypes[p]==5||trytypes[p]==6)	//bayesr or bayesr-shrink
-{postmean=get_postsamp_pragma(sum, lambdas[p]*value, lambdas2[p]*value, lambdas3[p]*value, lambdas4[p]*value, nss[j], variances[p2], tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], trytypes[p], &postprob, &postsamp, manyrands+p2*128, &start);}
+{postmean=get_postsamp_pragma(sum, lambdas[p]*value, lambdas2[p]*value, lambdas3[p]*value, lambdas4[p]*value, nss[j], variances[p2], tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], trytypes[p], &postprob, &postsamp, manyrands+p2*128, &start, NULL);}
 if(trytypes[p]==8)	//ldpred (use bolt function)
-{postmean=get_postsamp_pragma(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p2], tryps[p], tryp2s[p], -9999, -9999, 4, &postprob, &postsamp, manyrands+p2*128, &start);}
+{postmean=get_postsamp_pragma(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p2], tryps[p], tryp2s[p], -9999, -9999, 4, &postprob, &postsamp, manyrands+p2*128, &start, NULL);}
 
 //update residuals for remainder of block - only necessary if estimate has changed
 value3=postsamp-effs3[j-bitstart+p2*bitlength];
@@ -1814,11 +1967,11 @@ effs3[j-bitstart+p2*bitlength]=postsamp;
 }	//end of gaussian models
 }	//end of p2 loop
 
-//now do lasso and elastic models - must do in serial
+//now do lasso models - must do in serial
 for(p2=0;p2<total;p2++)
 {
 p=p2/num_chains;
-if(trytypes[p]==1||trytypes[p]==2||trytypes[p]==7)
+if(trytypes[p]==1||trytypes[p]==2)
 {
 for(j=bitstart2;j<bitend2;j++)
 {
@@ -1833,11 +1986,11 @@ value2=pow(exps[j]*her,-.5);
 
 //get posterior mean and sampling
 if(trytypes[p]==1)	//lasso-sparse
-{postmean=get_postsamp(sum, lambdas[p]*value2*nss[j], -9999, -9999, -9999, nss[j], variances[p2], -9999, -9999, -9999, -9999, NULL, 1, &postprob, &postsamp);}
+{postmean=get_postsamp(sum, lambdas[p]*value2*nss[j], -9999, -9999, -9999, nss[j], variances[p2], -9999, -9999, -9999, -9999, NULL, 1, &postprob, &postsamp, NULL);}
 if(trytypes[p]==2)	//lasso
-{postmean=get_postsamp(sum, lambdas[p]*value2, -9999, -9999, -9999, nss[j], variances[p2], -9999, -9999, -9999, -9999, NULL, 2, &postprob, &postsamp);}
+{postmean=get_postsamp(sum, lambdas[p]*value2, -9999, -9999, -9999, nss[j], variances[p2], -9999, -9999, -9999, -9999, NULL, 2, &postprob, &postsamp, NULL);}
 if(trytypes[p]==7)	//elastic
-{postmean=get_postsamp(sum, lambdas[p]*value2, lambdas2[p]*value2, lambdas3[p]*value, -9999, nss[j], variances[p2], tryps[p], tryp2s[p], tryp3s[p], -9999, NULL, 7, &postprob, &postsamp);}
+{postmean=get_postsamp(sum, lambdas[p]*value2, lambdas2[p]*value2, lambdas3[p]*value, -9999, nss[j], variances[p2], tryps[p], tryp2s[p], tryp3s[p], -9999, NULL, 7, &postprob, &postsamp, NULL);}
 
 //update residuals for remainder of block (effects will always change)
 value3=postsamp-effs3[j-bitstart+p2*bitlength];
@@ -1862,7 +2015,7 @@ count2++;
 }
 }
 
-if(resfix==0)   //sample from cond post dist, assuming prior dist prop to variance^-.5
+if(resfix==0)   //sample variance based on conditional distribution of rho, assuming prior dist prop to variance^-.5
 {
 //get Cbeta
 alpha=1.0;beta=0.0;
@@ -1870,16 +2023,14 @@ dsymm_("L", "L", &bitlength, &total, &alpha, cors, &bitlength, effs3, &bitlength
 
 for(p=0;p<total;p++)
 {
+if(dougvar!=7)  //use sbayesrc criterion to decide how to move
+{
 //compute t(beta) beta and t(beta) C beta - two (crude) estimates of variance explained for window
 value=ddot_(&bitlength, effs3+p*bitlength, &one, effs3+p*bitlength, &one);
 value2=ddot_(&bitlength, effs3+p*bitlength, &one, cors2+p*bitlength, &one);
 
-if(dougvar!=7)  //use sbayesrc criterion to decide how to move
-{
 if((value>1e-8&&value2>1e-8&&value>1.1*value2))    //resample variance from inverse gamma (but do not allow to go below 0.7)
 {
-if(rhosinvrhos==-9999){rhosinvrhos=cg_solve_lower_norm(cors, bitlength, rhos+bitstart, 1e-6);}
-
 //need t(rhos) inv(cors) rhos - 2 t(rhos) beta + t(beta) cors beta
 sum=rhosinvrhos-2*ddot_(&bitlength, effs3+p*bitlength, &one, rhos+bitstart, &one)+value2;
 variances[p]=0.5*sum*neff/rgamma(.5*bitlength);
@@ -1888,12 +2039,10 @@ if(variances[p]<0.7){variances[p]=0.7;}
 else    //reset
 {variances[p]=1.0;}
 }
-else    //always move, but do not allow variances below 1
+else    //always move (but do not allow to go below one)
 {
-if(rhosinvrhos==-9999){rhosinvrhos=cg_solve_lower_norm(cors, bitlength, rhos+bitstart, 1e-6);}
-
 //need t(rhos) inv(cors) rhos - 2 t(rhos) beta + t(beta) cors beta
-sum=rhosinvrhos-2*ddot_(&bitlength, effs3+p*bitlength, &one, rhos+bitstart, &one)+value2;
+sum=rhosinvrhos-2*ddot_(&bitlength, effs3+p*bitlength, &one, rhos+bitstart, &one)+ddot_(&bitlength, effs3+p*bitlength, &one, cors2+p*bitlength, &one);
 variances[p]=0.5*sum*neff/rgamma(.5*bitlength);
 if(variances[p]<1.0){variances[p]=1.0;}
 }
@@ -1969,12 +2118,15 @@ for(p=0;p<num_left;p++){ess[p]=2*ddot_(&bitlength, effs2+p*bitlength, &one, rhos
 
 for(count=0;count<maxiter;count++)
 {
+//set pars to zero
+for(p=0;p<num_left;p++){pars[p]=0;}
+
 if(finemap==0)  //can sub-divide bit
 {
-//set probs2 and pars to zero
+//set probs2 to zero
 for(p=0;p<num_left;p++)
 {
-for(j=0;j<bitlength;j++){probs2[j+p*bitlength]=0;pars[j+p*bitlength]=0;}
+for(j=0;j<bitlength;j++){probs2[j+p*bitlength]=0;}
 }
 
 for(bitstart2=bitstart;bitstart2<bitend;bitstart2+=bitsize)
@@ -2013,19 +2165,19 @@ value2=pow(exps[j]*her,-.5);
 
 //get posterior mean
 if(trytypes[p]==1)	//lasso-sparse
-{postmean=get_postmean(sum, lambdas[p]*value2*nss[j], -9999, -9999, -9999, nss[j], variances[p], -9999, -9999, -9999, -9999, NULL, 1, &postprob, &postvar);}
+{postmean=get_postmean(sum, lambdas[p]*value2*nss[j], -9999, -9999, -9999, nss[j], variances[p], -9999, -9999, -9999, -9999, NULL, 1, &postprob, pars+p);}
 if(trytypes[p]==2)	//lasso
-{postmean=get_postmean(sum, lambdas[p]*value2, -9999, -9999, -9999, nss[j], variances[p], -9999, -9999, -9999, -9999, NULL, 2, &postprob, &postvar);}
+{postmean=get_postmean(sum, lambdas[p]*value2, -9999, -9999, -9999, nss[j], variances[p], -9999, -9999, -9999, -9999, NULL, 2, &postprob, pars+p);}
 if(trytypes[p]==3)	//ridge
-{postmean=get_postmean(sum, lambdas[p]*value, -9999, -9999, -9999, nss[j], variances[p], -9999, -9999, -9999, -9999, NULL, 3, &postprob, &postvar);}
+{postmean=get_postmean(sum, lambdas[p]*value, -9999, -9999, -9999, nss[j], variances[p], -9999, -9999, -9999, -9999, NULL, 3, &postprob, pars+p);}
 if(trytypes[p]==4)	//bolt
-{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p], tryps[p], tryp2s[p], -9999, -9999, NULL, 4, &postprob, &postvar);}
+{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p], tryps[p], tryp2s[p], -9999, -9999, NULL, 4, &postprob, pars+p);}
 if(trytypes[p]==5||trytypes[p]==6)	//bayesr or bayesr-shrink
-{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, lambdas3[p]*value, lambdas4[p]*value, nss[j], variances[p], tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], NULL, trytypes[p], &postprob, &postvar);}
+{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, lambdas3[p]*value, lambdas4[p]*value, nss[j], variances[p], tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], NULL, trytypes[p], &postprob, pars+p);}
 if(trytypes[p]==7)	//elastic
-{postmean=get_postmean(sum, lambdas[p]*value2, lambdas2[p]*value2, lambdas3[p]*value, -9999, nss[j], variances[p], tryps[p], tryp2s[p], tryp3s[p], -9999, NULL, 7, &postprob, &postvar);}
+{postmean=get_postmean(sum, lambdas[p]*value2, lambdas2[p]*value2, lambdas3[p]*value, -9999, nss[j], variances[p], tryps[p], tryp2s[p], tryp3s[p], -9999, NULL, 7, &postprob, pars+p);}
 if(trytypes[p]==8)	//ldpred (use bolt function)
-{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p], tryps[p], tryp2s[p], -9999, -9999, NULL, 4, &postprob, &postvar);}
+{postmean=get_postmean(sum, lambdas[p]*value, lambdas2[p]*value, -9999, -9999, nss[j], variances[p], tryps[p], tryp2s[p], -9999, -9999, NULL, 4, &postprob, pars+p);}
 
 //update residuals for remainder of block
 value3=postmean-effs2[j-bitstart+p*bitlength];
@@ -2033,7 +2185,6 @@ for(j2=j+1;j2<bitend2;j2++){residuals[j2-bitstart2+p*bitsize]+=value3*cors[(size
 
 effs2[j-bitstart+p*bitlength]=postmean;
 probs2[j-bitstart+p*bitlength]=postprob;
-pars[j-bitstart+p*bitlength]=postvar;
 }}	//end of j loop
 }	//end of p loop
 }	//end of bitstart2 loop
@@ -2046,8 +2197,8 @@ for(p=0;p<Lnum;p++)
 for(j=0;j<bitlength;j++){probs2[j+p*bitlength]=0;}
 }
 
-//set pars and start of probs3 to zero
-for(j=0;j<bitlength;j++){pars[j]=0;probs3[j]=0;}
+//set start of probs3 to zero
+for(j=0;j<bitlength;j++){probs3[j]=0;}
 
 if(count==0)    //set end of probs3 to zero, so can check convergence
 {
@@ -2123,7 +2274,7 @@ probs2[j+p*bitlength]=value;
 probs3[j]+=value;
 effs3[j+p*bitlength]=value*pmeans[j+best*bitlength];
 effs2[j]+=value*pmeans[j+best*bitlength];
-pars[j]+=value*(pvars[j+best*bitlength]+pow(pmeans[j+best*bitlength],2));
+pars[0]+=value*(pvars[j+best*bitlength]+pow(pmeans[j+best*bitlength],2));
 }
 }
 }
@@ -2158,34 +2309,27 @@ if(max<tol){break;}
 for(j=0;j<bitlength;j++){probs3[j+bitlength]=probs3[j];}
 }
 
-if(resfix==0)   //estimate variance based on expected value of ||rho-Rbeta|| - note that we have computed C beta and ESS just above
+if(resfix==0)   //estimate variance based on expected distribution of rho, assuming prior dist prop to variance^-.5
 {
-if(finemap==0)  //always move, but do not allow variances below 1
+if(finemap==0)  //always move (but do not allow to go below one)
 {
 for(p=0;p<num_left;p++) 
 {
-if(rhosinvrhos==-9999){rhosinvrhos=cg_solve_lower_norm(cors, bitlength, rhos+bitstart, 1e-6);}
-
-//need t(rhos) inv(cors) rhos - 2 t(rhos) beta + t(beta) cors beta + variances (note that terms 2 and 3 equal ess)
-sum=rhosinvrhos-ess[p];
-for(j=0;j<bitlength;j++){sum+=pars[j+p*bitlength];}
+//need t(rhos) inv(cors) rhos - 2 t(rhos) beta + t(beta) cors beta + variances (note that terms 2 and 3 equal -ess, computed just above)
+sum=rhosinvrhos-ess[p]+pars[p];
 variances[p]=sum/bitlength*neff;
 if(variances[p]<1.0){variances[p]=1.0;}
 }
 }
-else    //only one variance - again, always move, but do not allow variances below 1
+else    //only one variance - again, always move (but do not allow to go below one)
 {
-if(rhosinvrhos==-9999){rhosinvrhos=cg_solve_lower_norm(cors, bitlength, rhos+bitstart, 1e-6);}
-
 //get Cbeta for each effect
 alpha=1.0;beta=0.0;
 dsymm_("L", "L", &bitlength, &Lnum, &alpha, cors, &bitlength, effs3, &bitlength, &beta, cors4, &bitlength);
 
-//need t(rhos) inv(cors) rhos - 2 t(rhos) beta + t(beta) cors beta + variances - sum of t(beta) R beta
-sum=rhosinvrhos-ess[0];
-for(j=0;j<bitlength;j++){sum+=pars[j];}
+//need t(rhos) inv(cors) rhos - 2 t(rhos) beta + t(beta) cors beta + variances - sum of t(beta) R beta (note that terms 2 and 3 equal -ess, computed just above)
+sum=rhosinvrhos-ess[0]+pars[0];
 for(p=0;p<Lnum;p++){sum-=ddot_(&bitlength, effs3+p*bitlength, &one, cors4+p*bitlength, &one);}
-
 variances[0]=sum/bitlength*neff;
 if(variances[0]<1.0){variances[0]=1.0;}
 }
@@ -2275,12 +2419,13 @@ probs[bitstart+j]=1-sum;
 }
 else	//one or more models is suspect - leave effect sizes at starting estimates (probs will be zero)
 {
-printf("Warning, Variational Bayes failed for Window %d, will revert to starting estimates\n", bit+1);
 if(mcmcfinal==0)
 {
+printf("Warning, Variational Bayes failed for Window %d, will revert to starting estimates\n", bit+1);
 ecount++;
 wcount+=bitlength;
 }
+else{printf("Warning, Variational Bayes failed for Window %d\n", bit+1);}
 }
 
 if(prsvar==1)	//only here if MCMC failed, so will set effects to the final estimate (will have num_left=1)
@@ -2442,8 +2587,8 @@ if(skipcv==0){free(nss2);free(rhos2);free(rhos3);}
 free(exps);free(cors_short);free(cors);
 if(num_sums3>1){free(nss4);free(chis4);free(rhos4);}
 if(num_sums3>1||metasum==1){free(cohers);}
-free(YTdata);free(cors2);free(effs);free(effs2);free(effs3);free(pars);free(probs);free(probs2);free(probs3);free(residuals);
-free(ess);free(ess2);free(variances);
+free(YTdata);free(cors2);free(effs);free(effs2);free(effs3);free(probs);free(probs2);free(probs3);free(residuals);
+free(ess);free(ess2);free(variances);free(pars);
 free(pmeans);free(pvars);free(bfs);free(gridmaxes);free(gridsums);
 free(predvars);free(predtops);free(predcors);free(predweights);
 free(dptrs);
@@ -2692,4 +2837,149 @@ for(j=bitstart;j<bitend;j++){YTdata[j]=rhos[j]*nss[j];}
 }
 */
 
+//tried to infer parameters from summary statistics
+/*
 
+if(finemap==0)  //test different models
+{
+//get expected heritability tagged by each predictor (cant be negative)
+for(j=0;j<data_length;j++)
+{
+exps[j]=0;
+for(q=0;q<total;q++){exps[j]+=stats[q]*svars[q][j]/ssums[q][q];}
+if(exps[j]<=0){exps[j]=1e-6;}
+}
+
+//reload stats, only ensuring not too small
+for(j=0;j<data_length;j++)
+{
+snss[j]=nss[j];
+schis[j]=chis[j];
+if(schis[j]<1e-6){schis[j]=1e-6;}
+}
+
+//get weighted variance of chisq statistics
+sum=0;sumsq=0;value=0;
+for(j=0;j<data_length;j++){sum+=schis[j]/rjksums[j];sumsq+=pow(schis[j],2)/rjksums[j];value+=pow(rjksums[j],-1);}
+mean=sum/value;
+var=sumsq/value-pow(mean,2);
+printf("observed mean %f var is %f\n", mean, var);
+
+sum=0;for(j=0;j<data_length;j++){sum+=rjksums[j];}
+printf("mean ld is %f\n", sum/data_length);
+
+for(p=0;p<num_try;p++)  //get expected variance for each set of parameters
+{
+sum=0;sumsq=0;value=0;
+for(j=0;j<data_length;j++)
+{
+sum+=(1+snss[j]*exps[j])/rjksums[j];
+if(trytypes[p]==5||trytypes[p]==6)  //bayesr models
+{sumsq+=(tryps[p]*pow(1+snss[j]*exps[j]*lambdas[p],2)+tryp2s[p]*pow(1+snss[j]*exps[j]*lambdas2[p],2)+tryp3s[p]*pow(1+snss[j]*exps[j]*lambdas3[p],2)+tryp4s[p]*pow(1+snss[j]*exps[j]*lambdas4[p],2))/rjksums[j];}
+if(trytypes[p]==8)  //ldpred models
+{sumsq+=(tryps[p]*pow(1+snss[j]*exps[j]*lambdas[p],2)+tryp2s[p]*pow(1+snss[j]*exps[j]*lambdas2[p],2))/rjksums[j];}
+value+=pow(rjksums[j],-1);
+}
+mean=sum/value;
+value=3*sumsq/value-pow(mean,2);
+
+printf("probs %f %f %f %f mean %f var %f\n", tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], mean, value);
+
+//how about likelihood?
+like=0;
+for(j=0;j<data_length;j++)
+{
+if(trytypes[p]==5||trytypes[p]==6)  //bayesr models
+{
+value=1+snss[j]*exps[j]*lambdas[p];
+value2=1+snss[j]*exps[j]*lambdas2[p];
+value3=1+snss[j]*exps[j]*lambdas3[p];
+value4=1+snss[j]*exps[j]*lambdas4[p];
+like+=log(tryps[p]*pow(schis[j]*value,-0.5)*exp(-0.5*schis[j]/value)+tryp2s[p]*pow(schis[j]*value2,-0.5)*exp(-0.5*schis[j]/value2)+tryp3s[p]*pow(schis[j]*value3,-0.5)*exp(-0.5*schis[j]/value3)+tryp4s[p]*pow(schis[j]*value4,-0.5)*exp(-0.5*schis[j]/value4))/rjksums[j];
+}
+if(trytypes[p]==8)  //ldpred models
+{
+value=1+snss[j]*exps[j]*lambdas[p];
+value2=1+snss[j]*exps[j]*lambdas2[p];
+like+=log(tryps[p]*pow(schis[j]*value,-0.5)*exp(-0.5*schis[j]/value)+tryp2s[p]*pow(schis[j]*value2,-0.5)*exp(-0.5*schis[j]/value2))/rjksums[j];
+}
+if(like!=like||isinf(like)){printf("j %d of %d values %f %f %f %f , chisq %f vales %f %f %f %f, size %e exp %e centres %f mults %f tag %f\n", j+1, data_length ,  tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], schis[j], value, value2, value3, value4, exp(-schis[j]), exps[j], centres[j], mults[j], rjksums[j]);exit(1);}
+}
+
+if(p==0){best=0;likenull=like;}
+if(like>likenull){best=p;likenull=like;}
+printf("probs %f %f %f %f like %f\n", tryps[p], tryp2s[p], tryp3s[p], tryp4s[p], like-likenull);
+}
+printf("best %f %f %f %f %d\n", tryps[best], tryp2s[best], tryp3s[best], tryp4s[best], best+1);
+}
+*/
+
+//tried to estimate scaling based on rhosinvrhos
+/*
+if(noscale==2)  //scale based on rhosinvrhos
+{
+//re-open focal correlations
+s=sumpops[0];
+
+sprintf(filename2,"%s.cors.bin", corstems[s]);
+if((input2=fopen(filename2,"rb"))==NULL)
+{printf("Error re-opening %s\n\n",filename2);exit(1);}
+
+sum2=0;
+for(bit=0;bit<bittotal;bit++)
+{
+bitstart=blockstarts[bit];
+bitend=blockends[bit];
+bitlength=blockends[bit]-blockstarts[bit];
+
+if(bit%100==0)
+{
+printf("Calculating scaling for Window %d of %d\n", bit+1, bittotal);
+
+sprintf(filename,"%s.progress",outfile);
+if((output=fopen(filename,"a"))==NULL)
+{printf("Error re-opening %s\n\n",filename);exit(1);}
+fprintf(output,"Calculating scaling for Window %d of %d\n", bit+1, bittotal);
+fclose(output);
+}
+
+//get average sample size
+sum=0;for(j=bitstart;j<bitend;j++){sum+=nss[j];}
+neff=sum/bitlength;
+
+//read lower triangle of focal correlations
+fseeko(input2, Dindexes[s][bit], SEEK_SET);
+for(k=0;k<Dsizes[s][bit][0]-1;k++)
+{
+count2=fread(cors_short+(size_t)k*Dsizes[s][bit][0]+k+1, sizeof(unsigned short), Dsizes[s][bit][0]-k-1, input2);
+if(count2!=Dsizes[s][bit][0]-k-1)
+{printf("Error reading correlations for Window %d from %s\n\n", bit+1, filename2);exit(1);}
+}
+
+//now extract correlations for all predictors (remember shrink, but no need for signs)
+#pragma omp parallel for private(k,j) schedule(static)
+for(k=0;k<bitlength;k++)
+{
+cors[(size_t)k*bitlength+k]=1.0;
+for(j=k+1;j<bitlength;j++)
+{cors[(size_t)k*bitlength+j]=(0.00005*cors_short[(size_t)Duse[s][bit][k]*Dsizes[s][bit][0]+Duse[s][bit][j]]-1)*shrink;}
+}
+
+//compute rhosinvrhos
+rhosinvrhos=cg_solve_lower_norm(cors, bitlength, rhos+bitstart, 1e-6);
+sum2+=rhosinvrhos*neff;
+}
+fclose(input2);
+
+value=sum2/data_length;
+printf("2Estimated inflation of test statistics is %f\n", value);
+
+value2=pow(value,-1);
+for(j=0;j<data_length;j++)
+{
+chis[j]*=value2;
+if(rhos[j]>0){rhos[j]=pow(chis[j]/(chis[j]+nss[j]),.5);}
+else{rhos[j]=-pow(chis[j]/(chis[j]+nss[j]),.5);}
+}
+}
+*/

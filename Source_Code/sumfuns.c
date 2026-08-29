@@ -258,9 +258,9 @@ double *sW, *sX, *sY, *sXTX, *sXTX2, *sXTY, *sXTXs, *sXTYs, *sT, *sT2, *AI, *AI2
 
 FILE *output;
 
-
 //assuming statj = c * (1 + nja + njvj b), where c is gc, a is intercept/n, b is h2SNP/ssums
-//easier to write as (statj-1) = nj/nvj cbn + (c-1) + nj/n can = sT theta, where n is average nj
+//easier to write as (statj-1) = nj/n vj cbn + (c-1) + nj/n can = sT theta, where n is average nj
+
 
 //set total and maybe num_blocks
 total=num_parts+gcon+cept;
@@ -818,7 +818,7 @@ if(cohers2!=NULL)	//compute variance of (category - exp x total), where exp = ss
 {
 for(q=0;q<num_parts;q++)
 {
-//get cov(category, total) = cov( sum her_q2 s_q_q2/s_q2_q2, sum her_q3)
+//get cov(category, total) = cov( sum her_q3, sum her_q2 s_q_q2/s_q2_q2)
 sum=0;
 for(q2=0;q2<num_parts;q2++)
 {
@@ -826,10 +826,10 @@ for(q3=0;q3<num_parts;q3++)
 {sum+=JAIJT[q2+q3*total]*ssums[q][q2]/ssums[q2][q2];}
 }
 
-//can compute variance if variance of category, total and sum>=0
-if(stats[total+1+q+total+1+num_parts]&&stats[total+total+1+num_parts]>0&&sum>=0)
+//can compute variance if variance of category and total >=0 (used to also require sum>=0)
+if(stats[total+1+q+total+1+num_parts]&&stats[total+total+1+num_parts]>0)
 {
-value=pow(stats[total+1+q+total+1+num_parts],2)-2*ssums[q][total+1]*sum+pow(ssums[q][total+1]*stats[total+total+1+num_parts],2);
+value=pow(stats[total+1+q+total+1+num_parts],2)-2*ssums[q][num_parts+1]*sum+pow(ssums[q][num_parts+1]*stats[total+total+1+num_parts],2);
 if(value>=0){cohers2[q]=pow(value,.5);}
 else{cohers2[q]=-9999;}
 }
@@ -1009,10 +1009,10 @@ for(q3=0;q3<num_parts;q3++)
 {sum+=JAIJT[q2+q3*total]*ssums[q][q2]/ssums[q2][q2];}
 }
 
-//can compute variance if variance of category, total and sum>=0
+//can compute variance if variance of category and total >=0 (used to also require sum>=0)
 if(stats[total+1+q+total+1+num_parts]&&stats[total+total+1+num_parts]>0&&sum>=0)
 {
-value=pow(stats[total+1+q+total+1+num_parts],2)-2*ssums[q][total+1]*sum+pow(ssums[q][total+1]*stats[total+total+1+num_parts],2);
+value=pow(stats[total+1+q+total+1+num_parts],2)-2*ssums[q][num_parts+1]*sum+pow(ssums[q][num_parts+1]*stats[total+total+1+num_parts],2);
 if(value>=0){cohers2[q]=pow(value,.5);}
 else{cohers2[q]=-9999;}
 }

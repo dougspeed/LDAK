@@ -443,6 +443,8 @@ else{adjpreds=2;}
 }
 }
 
+if(sandwich==-9999){sandwich=0;}
+
 if(scoretest==-9999){scoretest=1;}
 
 if(maxcor==-9999){maxcor=1;}
@@ -805,7 +807,6 @@ if(ldpred==-9999){ldpred=0;}
 
 if(ndivs==-9999){ndivs=20;}
 //will set nmcmc in getnums.c
-if(maxher==-9999){maxher=0.8;}
 
 if(checkped==-9999)
 {
@@ -1073,7 +1074,8 @@ if(checkld==-9999){checkld=1-skipcv;}
 if(checkpops==-9999){checkpops=1;}
 if(checkfreq==-9999){checkfreq=gotfreq;}
 if(maxfreq==-9999){maxfreq=0.2;}
-if(resfix==-9999){resfix=0;}
+if(noscale==-9999){noscale=0;}
+if(resfix==-9999){resfix=1;}
 if(minher==-9999){minher=0.2;}
 if(mcmcfinal==-9999){mcmcfinal=0;}
 if(num_chains==-9999){num_chains=4;}

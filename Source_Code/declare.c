@@ -361,6 +361,7 @@ char ldfile2[500]="blank", ldfile[500]="";
 int checkpops=-9999;
 int checkfreq=-9999;
 double maxfreq=-9999;
+int noscale=-9999;
 int resfix=-9999;
 double minher=-9999;
 int mcmcfinal=-9999;
@@ -659,7 +660,7 @@ double *relats, *cX, *cX2, *cR, *toprats, *botrats;
 
 double *lambdas, *lambdas2, *lambdas3, *lambdas4;
 double *cgammas, *csds, *ceffs;
-double *effs, *effs2, *effs3, *effs4, *pars;
+double *effs, *effs2, *effs3, *effs4;
 double *probs, *probs2, *probs3, *residuals, *residuals2, *residuals3, *changes;
 
 int *bitrun, *bitdo, *bitactive, *bitdet1, *bitdet2;
@@ -684,7 +685,7 @@ char **corstems;
 int *trytypes;
 double *trylams, *tryscales, *tryps, *tryp2s, *tryp3s, *tryp4s, *tryf2s;
 int Lbit;
-double escale;
+double sscale, sscale2, escale;
 double *vargrid, *gridmaxes, *gridsums;
 double *ess, *ess2, *variances, rhosinvrhos;
 
@@ -764,12 +765,12 @@ FILE **Minput;
 size_t scount, scount2, smax;
 int i, i2, i3, j, j2, j3, k, k2, g, m, m2, m3, p, p2, q, q2, q3, r, s, s2, s3, count, count2, count3, count4, count5, count6;
 int current, head, found, total, total2, total3, token, token2, indcount, ecount, wcount, xcount, *ycounts;
-int shuffle, start, end, best,mark, mark2, mark3, gen, gen2, *gens, flag, flag2, cflag, dflag, eflag, hflag, pflag, *order, *order2, cols[6];
+int shuffle, start, end, best, mark, mark2, mark3, gen, gen2, *gens, flag, flag2, cflag, dflag, eflag, hflag, pflag, *order, *order2, cols[6];
 double sum, sum2, sum3, sumsq, sumsq2, sumsq3, sumsq4, mean, mean2, mean3, var, var2, var3, value, value2, value3, value4, value5, value6;
-double last, min, max, med, maf, varphen, gif, postmean, postvar, postsamp, postprob, unifrand, *manyrands, *loads, *loads2;
+double last, min, max, med, maf, varphen, gif, postmean, postsamp, postprob, unifrand, *manyrands, *loads, *loads2;
 double powersave, hersave, *hers, *hers2, *hersold, *hersds, *shares, *sharesds, *cohers, *cohers2, mat[4], mat2[2];
 double likenull, like, lrtstat, lrtpva, *likes, *likesold;
-double neff, sumexps, *pens, factor, factor2;
+double neff, sumexps, *pens, *pars, factor, factor2;
 double weightsum, minpvalue, minpvalue2, *jacks, *gaussian, *tryhers, *polates, *polates2;
 double *vstarts, *stats, *stats2, *stats3, *stats4, **effects, *varexp;
 

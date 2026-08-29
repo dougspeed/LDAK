@@ -489,7 +489,7 @@ if(shape>=1)    //generate gamma(shape) directly
 shape2=shape;
 u2=1;
 }
-else    //generate gamma(shape+1), then multiply by unif^(1-/shape)
+else    //generate gamma(shape+1), then multiply by unif^(1/shape)
 {
 shape2=shape+1;
 u2=pow(genrand_real2(),1.0/shape);

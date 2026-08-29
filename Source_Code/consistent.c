@@ -267,6 +267,9 @@ if((mode==101||mode==102||mode==103||mode==104)&&(power!=-9999||hwestand!=-9999)
 if((mode==117||mode==122||mode==162)&&(strcmp(weightsfile,"blank")!=0||power!=-9999||hwestand!=-9999))
 {printf("Error, you can not use \"--weights\", \"--power\" or \"--hwe-stand\" with \"--calc-blups\", \"--sub-grm\" or \"--calc-pca-loads\" (the predictor scalings will be read from the grm.details file)\n\n");exit(1);}
 
+if(mode==159&&power!=-9999&&power!=-1&&power!=-0.75&&power!=-0.5&&power!=-0.25&&power!=0)
+{printf("Error, power must be -1, -0.75, -0.5, -0.25 or 0 (not %.4f)\n\n", power);exit(1);}
+
 if(mode==160&&(strcmp(weightsfile,"blank")!=0||power!=-9999))
 {printf("Error, you can not use \"--weights\" or \"--power\" with \"--validate\"\n\n");exit(1);}
 
@@ -1488,6 +1491,9 @@ if(gcon!=-9999&&mode!=146&&mode!=147)
 if(cept!=-9999&&mode!=146&&mode!=147)
 {printf("Error, you can only use \"--intercept\" with \"--sum-hers\" or \"--sum-cors\"\n\n");exit(1);}
 
+if(gcon==1&&cept==1)
+{printf("Error, you can not use both \"--genomic-control YES\" and \"--intercept YES\n");exit(1);}
+
 if(oversamp!=-9999&&mode!=147)
 {printf("Error, you can only use \"--overlapping-samples\" with \"--sum-cors\"\n\n");exit(1);}
 
@@ -1684,8 +1690,8 @@ if(ndivs!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
 if(nmcmc!=-9999&&drm==-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
 {printf("Error, you can only use \"--num-random-vectors\" with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\", or with \"--linear\" and \"--DRM\"\n\n");exit(1);}
 
-if(maxher!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154&&mode!=159)
-{printf("Error, you can only use \"--max-her\" with \"--ridge\", \"--bolt\", \"--bayesr\", \"--elastic\", \"--mega-prs\" or \"--giga-prs\"\n\n");exit(1);}
+if(maxher!=-9999&&mode!=151&&mode!=152&&mode!=153&&mode!=154)
+{printf("Error, you can only use \"--max-her\" with \"--ridge\", \"--bolt\", \"--bayesr\" or \"--elastic\"\n\n");exit(1);}
 
 ////////
 

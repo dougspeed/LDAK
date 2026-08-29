@@ -13,6 +13,7 @@ Copyright 2026 Doug Speed.
 
 //Single-predictor linear regression with duos (no top-preds, enviro, spa or sample weights) - note that keepsamps might not be monotonic / unique
 //the full model regresses the phenotype on the predictor and one set of parental genotypes
+//automatically use sandwich variances (code does not rely on the variable sandwich)
 
 ///////////////////////////
 

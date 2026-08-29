@@ -15,6 +15,7 @@ Copyright 2026 Doug Speed.
 //performing linear regression (mode==131), quasi-logistic regression (mode==132&fastgwa==0) or logistic regression (mode==131&fastgwa!=0)
 //for quasi-logistic spa, found best to regress (Y-mu) on X (instead of (Y-mu)/W on WX or alternatives)
 //if using sample weights, will have adjpreds=2; if multi=1, must have fastgwa=0
+//if mode==132, will have set sandwich=0
 
 ///////////////////////////
 

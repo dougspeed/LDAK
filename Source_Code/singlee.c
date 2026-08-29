@@ -13,6 +13,7 @@ Copyright 2026 Doug Speed.
 
 //Single-predictor linear regression with families - might permute (no top-preds, enviro, spa or sample weights)
 //the full model regresses the phenotype on the predictor and the mean of that predictor for the corresponding family
+//automatically use sandwich variances (code does not rely on the variable sandwich)
 
 ///////////////////////////
 

@@ -2952,6 +2952,15 @@ if(maxfreq<=0){printf("Error, %s should be a positive number (not %s)\n\n", argv
 found=1;
 }
 
+if(strcmp(argv[count],"--no-scale")==0)
+{
+noscale=-1;
+if(strcmp(argv[count+1],"YES")==0){noscale=1;}
+if(strcmp(argv[count+1],"NO")==0){noscale=0;}
+if(noscale==-1){printf("Error, %s should be YES or NO (not %s)\n\n", argv[count], argv[count+1]);exit(1);}
+found=1;
+}
+
 if(strcmp(argv[count],"--fix-residual-variance")==0)
 {
 resfix=-1;
@@ -3172,7 +3181,7 @@ found=1;
 
 if(strcmp(argv[count],"--her-big")==0)
 {
-if(sscanf(argv[count+1],"%lf%c", &dosage, &readchar)!=1)
+if(sscanf(argv[count+1],"%lf%c", &her, &readchar)!=1)
 {printf("Error, %s should be a positive number (not %s)\n\n", argv[count], argv[count+1]);exit(1);}
 if(her<=0){printf("Error, %s should be a positive number (not %s)\n\n", argv[count], argv[count+1]);exit(1);}
 found=1;

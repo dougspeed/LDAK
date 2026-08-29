@@ -1634,10 +1634,7 @@ else{postmean=(sum+resvar*lam)/dsq;}
 }
 else{postmean=0;}
 
-//will not be using penalty
-
-if(prob!=NULL){*prob=(postmean!=0);}
-if(pvar!=NULL){*pvar=0;}
+//will not be using penalty, prob or postvar
 }
 
 if(type==2)	//lasso with posterior mean - divide prior as positive exp then negative exp
@@ -1713,7 +1710,7 @@ if(frac2>0){*pen+=frac2*(log(frac2/0.5/lam2/area2)-.5*log(2*M_PI*var2)-.5*(brun2
 }
 
 if(prob!=NULL){*prob=1;}
-if(pvar!=NULL){*pvar=postvar;}
+if(pvar!=NULL){*pvar+=postvar;}
 }
 
 if(type==3)	//ridge - just one gaussian - possible that lam is zero or negative
@@ -1732,13 +1729,13 @@ if(*pen!=*pen){printf("dsq %f postvar %f resvar %f lam %f\n", dsq, postvar, resv
 }
 
 if(prob!=NULL){*prob=1;}
-if(pvar!=NULL){*pvar=postvar;}
+if(pvar!=NULL){*pvar+=postvar;}
 }
 else
 {
 postmean=0;
 if(prob!=NULL){*prob=0;}
-if(pvar!=NULL){*pvar=0;}
+if(pvar!=NULL){*pvar+=0;}
 }
 }
 
@@ -1771,7 +1768,7 @@ if(frac2>0){*pen+=frac2*log(frac2/pp2);}
 }
 
 if(prob!=NULL){*prob=frac;}
-if(pvar!=NULL){*pvar=postvar;}
+if(pvar!=NULL){*pvar+=postvar;}
 }
 else	//have gaussian and point mass
 {
@@ -1797,7 +1794,7 @@ if(frac2>0){*pen+=frac2*log(frac2/pp2);}
 }
 
 if(prob!=NULL){*prob=frac;}
-if(pvar!=NULL){*pvar=postvar;}
+if(pvar!=NULL){*pvar+=postvar;}
 }
 }
 
@@ -1851,8 +1848,7 @@ if(frac4>0){*pen+=frac4*log(frac4/pp4);}
 }
 
 if(prob!=NULL){*prob=1-frac;}
-
-if(pvar!=NULL){*pvar=postvar;}
+if(pvar!=NULL){*pvar+=postvar;}
 }
 
 if(type==6)	//bayesr with four gaussians
@@ -1899,7 +1895,7 @@ if(frac4>0){*pen+=frac4*log(frac4/pp4);}
 }
 
 if(prob!=NULL){*prob=frac4;}
-if(pvar!=NULL){*pvar=postvar;}
+if(pvar!=NULL){*pvar+=postvar;}
 }
 
 if(type==7)	//elastic - using lam=lam2 and pp=pp2 for lasso, lam3 and pp3 for ridge - have ensured pp3 within (0,1)
@@ -1975,7 +1971,7 @@ if(frac3>0){*pen+=frac3*log(frac3/pp3);}
 }
 
 if(prob!=NULL){*prob=frac+frac2;}
-if(pvar!=NULL){*pvar=postvar;}
+if(pvar!=NULL){*pvar+=postvar;}
 }
 
 if(pen!=NULL)
@@ -2064,7 +2060,7 @@ if(value4<1e-10){value4=1e-10;}
 
 ////////
 
-double get_postsamp(double sum, double lam, double lam2, double lam3, double lam4, double dsq, double resvar, double pp, double pp2, double pp3, double pp4, double *pen, int type, double *prob, double *postsamp)
+double get_postsamp(double sum, double lam, double lam2, double lam3, double lam4, double dsq, double resvar, double pp, double pp2, double pp3, double pp4, double *pen, int type, double *prob, double *postsamp, int *ptally)
 //type=1 - lasso-sparse, type=2 - lasso-shrink, type=3 - ridge, type=4 - bolt, type=5 bayesr-sparse, type=6 - bayesr-shrink, type=7 - elastic
 //for type=5, if pp=-1, must correct probabilties
 {
@@ -2235,8 +2231,16 @@ if(frac2>0){*pen+=frac2*log(frac2/pp2);}
 if(prob!=NULL){*prob=frac;}
 
 unifrand=genrand_real1();
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=mean+rnorm_safe()*pow(var,.5);ptally[0]++;}
+else{*postsamp=mean2+rnorm_safe()*pow(var2,.5);ptally[1]++;}
+}
+else
+{
 if(unifrand<frac){*postsamp=mean+rnorm_safe()*pow(var,.5);}
 else{*postsamp=mean2+rnorm_safe()*pow(var2,.5);}
+}
 }
 else	//have gaussian and point mass
 {
@@ -2264,8 +2268,16 @@ if(frac2>0){*pen+=frac2*log(frac2/pp2);}
 if(prob!=NULL){*prob=frac;}
 
 unifrand=genrand_real1();
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=mean+rnorm_safe()*pow(var,.5);ptally[0]++;}
+else{*postsamp=0;ptally[1]++;}
+}
+else
+{
 if(unifrand<frac){*postsamp=mean+rnorm_safe()*pow(var,.5);}
 else{*postsamp=0;}
+}
 }
 }
 
@@ -2321,6 +2333,21 @@ if(frac4>0){*pen+=frac4*log(frac4/pp4);}
 if(prob!=NULL){*prob=1-frac;}
 
 unifrand=genrand_real1();
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=0;ptally[0]++;}
+else
+{
+if(unifrand<frac+frac2){*postsamp=mean2+rnorm_safe()*pow(var2,.5);ptally[1]++;}
+else
+{
+if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_safe()*pow(var3,.5);ptally[2]++;}
+else{*postsamp=mean4+rnorm_safe()*pow(var4,.5);ptally[3]++;}
+}
+}
+}
+else
+{
 if(unifrand<frac){*postsamp=0;}
 else
 {
@@ -2329,6 +2356,7 @@ else
 {
 if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_safe()*pow(var3,.5);}
 else{*postsamp=mean4+rnorm_safe()*pow(var4,.5);}
+}
 }
 }
 }
@@ -2379,6 +2407,21 @@ if(frac4>0){*pen+=frac4*log(frac4/pp4);}
 if(prob!=NULL){*prob=frac4;}
 
 unifrand=genrand_real1();
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=mean+rnorm_safe()*pow(var,.5);ptally[0]++;}
+else
+{
+if(unifrand<frac+frac2){*postsamp=mean2+rnorm_safe()*pow(var2,.5);ptally[1]++;}
+else
+{
+if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_safe()*pow(var3,.5);ptally[2]++;}
+else{*postsamp=mean4+rnorm_safe()*pow(var4,.5);ptally[3]++;}
+}
+}
+}
+else
+{
 if(unifrand<frac){*postsamp=mean+rnorm_safe()*pow(var,.5);}
 else
 {
@@ -2387,6 +2430,7 @@ else
 {
 if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_safe()*pow(var3,.5);}
 else{*postsamp=mean4+rnorm_safe()*pow(var4,.5);}
+}
 }
 }
 }
@@ -2466,11 +2510,22 @@ if(frac3>0){*pen+=frac3*log(frac3/pp3);}
 if(prob!=NULL){*prob=frac+frac2;}
 
 unifrand=genrand_real1();
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=sample_trun_normal(mean,var,0);ptally[0]++;}
+else
+{
+if(unifrand<frac+frac2){*postsamp=sample_trun_normal(mean2,var2,1);ptally[1]++;}
+else{*postsamp=mean3+rnorm_safe()*pow(var3,.5);ptally[2]++;}
+}
+}
+else
+{
 if(unifrand<frac){*postsamp=sample_trun_normal(mean,var,0);}
 else
 {
 if(unifrand<frac+frac2){*postsamp=sample_trun_normal(mean2,var2,1);}
-else{*postsamp=mean3+rnorm_safe()*pow(var3,.5);
+else{*postsamp=mean3+rnorm_safe()*pow(var3,.5);}
 }
 }
 }
@@ -2497,7 +2552,7 @@ return(postmean);
 
 ////////
 
-double get_postsamp_pragma(double sum, double lam, double lam2, double lam3, double lam4, double dsq, double resvar, double pp, double pp2, double pp3, double pp4,  int type, double *prob, double *postsamp, double *manyrands, int *start)
+double get_postsamp_pragma(double sum, double lam, double lam2, double lam3, double lam4, double dsq, double resvar, double pp, double pp2, double pp3, double pp4,  int type, double *prob, double *postsamp, double *manyrands, int *start, int *ptally)
 //same as above, but only considers types 3, 4, 5, 6 or 8, and no need to get pen
 {
 double mean, mean2, mean3, mean4, var, var2, var3, var4, frac, frac2, frac3, frac4;
@@ -2545,8 +2600,16 @@ postvar=frac*(var+pow(mean,2))+frac2*(var2+pow(mean2,2))-pow(postmean,2);
 if(prob!=NULL){*prob=frac;}
 
 unifrand=manyrands[(*start)%128];*start=*start+1;
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=mean+rnorm_pragma(manyrands,start)*pow(var,.5);ptally[0]++;}
+else{*postsamp=mean2+rnorm_pragma(manyrands,start)*pow(var2,.5);ptally[1]++;}
+}
+else
+{
 if(unifrand<frac){*postsamp=mean+rnorm_pragma(manyrands,start)*pow(var,.5);}
 else{*postsamp=mean2+rnorm_pragma(manyrands,start)*pow(var2,.5);}
+}
 }
 else	//have gaussian and point mass
 {
@@ -2566,8 +2629,16 @@ postvar=frac*(var+pow(mean,2))-pow(postmean,2);
 if(prob!=NULL){*prob=frac;}
 
 unifrand=manyrands[(*start)%128];*start=*start+1;
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=mean+rnorm_pragma(manyrands,start)*pow(var,.5);ptally[0]++;}
+else{*postsamp=0;ptally[1]++;}
+}
+else
+{
 if(unifrand<frac){*postsamp=mean+rnorm_pragma(manyrands,start)*pow(var,.5);}
 else{*postsamp=0;}
+}
 }
 }
 
@@ -2611,6 +2682,21 @@ postvar=frac2*(var2+pow(mean2,2))+frac3*(var3+pow(mean3,2))+frac4*(var4+pow(mean
 if(prob!=NULL){*prob=1-frac;}
 
 unifrand=manyrands[(*start)%128];*start=*start+1;
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=0;ptally[0]++;}
+else
+{
+if(unifrand<frac+frac2){*postsamp=mean2+rnorm_pragma(manyrands,start)*pow(var2,.5);ptally[1]++;}
+else
+{
+if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_pragma(manyrands,start)*pow(var3,.5);ptally[2]++;}
+else{*postsamp=mean4+rnorm_pragma(manyrands,start)*pow(var4,.5);ptally[3]++;}
+}
+}
+}
+else
+{
 if(unifrand<frac){*postsamp=0;}
 else
 {
@@ -2619,6 +2705,7 @@ else
 {
 if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_pragma(manyrands,start)*pow(var3,.5);}
 else{*postsamp=mean4+rnorm_pragma(manyrands,start)*pow(var4,.5);}
+}
 }
 }
 }
@@ -2656,6 +2743,21 @@ postvar=frac*(var+pow(mean,2))+frac2*(var2+pow(mean2,2))+frac3*(var3+pow(mean3,2
 if(prob!=NULL){*prob=frac4;}
 
 unifrand=manyrands[(*start)%128];*start=*start+1;
+if(ptally!=NULL)
+{
+if(unifrand<frac){*postsamp=mean+rnorm_pragma(manyrands,start)*pow(var,.5);ptally[0]++;}
+else
+{
+if(unifrand<frac+frac2){*postsamp=mean2+rnorm_pragma(manyrands,start)*pow(var2,.5);ptally[1]++;}
+else
+{
+if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_pragma(manyrands,start)*pow(var3,.5);ptally[2]++;}
+else{*postsamp=mean4+rnorm_pragma(manyrands,start)*pow(var4,.5);ptally[3]++;}
+}
+}
+}
+else
+{
 if(unifrand<frac){*postsamp=mean+rnorm_pragma(manyrands,start)*pow(var,.5);}
 else
 {
@@ -2664,6 +2766,7 @@ else
 {
 if(unifrand<frac+frac2+frac3){*postsamp=mean3+rnorm_pragma(manyrands,start)*pow(var3,.5);}
 else{*postsamp=mean4+rnorm_pragma(manyrands,start)*pow(var4,.5);}
+}
 }
 }
 }
@@ -3229,7 +3332,7 @@ if(j2>j){cors2[j]=cors2[j2];}
 alpha=1.0;beta=0.0;
 dgemv_("N", &count2, &count, &alpha, cors3, &count2, cors2, &one, &beta, cors, &one);
 
-for(j=0;j<Dsizes[s][bit][1]-count;j++)
+for(j=0;j<count2;j++)
 {
 j2=indexer2[j];
 Mnss[q][bitstart+Duse2[s][bit][j2]]=mean;

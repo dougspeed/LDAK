@@ -135,21 +135,22 @@ if(fscanf(input, "%lf ", trylams)!=1){printf("Error reading lambda from Row 2 of
 
 fclose(input);
 }
-else	//not bestfile, so will have her
+else	//not bestfile
 {
 if(strcmp(fracfile,"blank")==0)	//using defaults
 {
 count=0;
 
-if(ptype==0)	//mega - using lasso, ridge, bayesr and elastic
+if(ptype==0)	//mega - using lasso, ridge, bayesr (minus ridge) and elastic
 {
 //lasso and ridge
 trytypes[count]=2;count++;
 trytypes[count]=3;count++;
 
-//bayesr (minus ridge)
+//bayesr (squeezed down)
 loads=malloc(sizeof(double)*5);
 loads[0]=0;loads[1]=.01;loads[2]=.05;loads[3]=.1;loads[4]=.2;
+
 for(j=0;j<5;j++){
 for(j2=j;j2<5;j2++){
 for(j3=j2;j3<5;j3++){
@@ -157,6 +158,7 @@ if(j+j2+j3>0)
 {
 trytypes[count]=5;tryp4s[count]=loads[j];tryp3s[count]=loads[j2];
 tryp2s[count]=loads[j3];tryps[count]=1-tryp2s[count]-tryp3s[count]-tryp4s[count];count++;
+while(tryp4s[count]==0){tryp4s[count]=tryp3s[count];tryp3s[count]=tryp2s[count];tryp2s[j]=0;}
 }
 }}}
 free(loads);
@@ -176,7 +178,7 @@ tryp3s[count]=1-loads[j];tryf2s[count]=loads2[j2];count++;
 free(loads);free(loads2);
 }	//end of ptype=0
 
-if(ptype==1)	//lasso-sparse (her does not feature)
+if(ptype==1)	//lasso-sparse
 {
 for(p=0;p<20;p++){trytypes[count]=1;tryscales[count]=0.9;trylams[count]=0.001*pow(100,(double)p/19);count++;}
 for(p=0;p<20;p++){trytypes[count]=1;tryscales[count]=0.5;trylams[count]=0.001*pow(100,(double)p/19);count++;}
@@ -266,8 +268,8 @@ loads=malloc(sizeof(double)*5);
 loads[0]=0;loads[1]=.01;loads[2]=.05;loads[3]=.1;loads[4]=.2;
 
 trytypes[0]=6;tryps[0]=0;tryp2s[0]=0;tryp3s[0]=0;tryp4s[0]=1;
-
 count=1;
+
 for(j=0;j<5;j++){
 for(j2=j;j2<5;j2++){
 for(j3=j2;j3<5;j3++){
@@ -369,6 +371,7 @@ read_values(fracfile, tryp4s, num_try, NULL, 4, 0, 0);
 
 for(p=0;p<num_try;p++)
 {
+if(tryps[p]>=1){printf("Error, the first probability in %s must be less than one (not %f)\n\n", fracfile, tryps[p]);exit(1);}
 sum=tryps[p]+tryp2s[p]+tryp3s[p]+tryp4s[p];
 if(sum<0.99||sum>1.01)
 {printf("Error, probabilities in Row %d of %s sum to %.4f (not one)\n\n", p+1, fracfile, sum);exit(1);}
