@@ -75,7 +75,7 @@ Copyright 2026 Doug Speed.
 #include <time.h>
 #include <float.h>
 #include <zlib.h>
-#include "zstd.h"
+#include <zstd.h>
 #include <limits.h>
 #include <ctype.h>
 
