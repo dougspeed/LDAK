@@ -2019,7 +2019,7 @@ found=1;
 
 if(strcmp(argv[count],"--DRM")==0)
 {
-#if DRM==0
+#if VQTL==0
 printf("Error, this version of LDAK can not run DRM; please contact Elham Assary for more information\n\n");exit(1);
 #endif
 

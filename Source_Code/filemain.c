@@ -1417,7 +1417,7 @@ count2=find_strings(preds, length, gotpreds, found, indexer, indexer2, NULL, sum
 for(j=0;j<length;j++)
 {
 nss[j]=0;chis[j]=0;rhos[j]=0;
-if(a1freq!=NULL){a1freq[j]=0;}
+if(a1freq!=NULL){a1freq[j]=-9999;}
 }
 
 count3=0;

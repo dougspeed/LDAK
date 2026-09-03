@@ -16,7 +16,7 @@ Copyright 2026 Doug Speed.
 
 #define MKL 1	//1 to compile with mkl, 0 to compile without mkl, 2 to compile with AOCL
 #define MET 0	//0 to compile with qsopt (required if you wish to calculate weightings)
-#define DRM 1	//1 to allow DRM
+#define VQTL 1	//1 to allow DRM
 
 #include "ldak.c"
 

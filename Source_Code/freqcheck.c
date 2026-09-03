@@ -196,22 +196,23 @@ value=value3/sum;
 }
 
 flag=-1;
+value3=Ma1freq[q][j];
 if(checkfreq==1)
 {
 if(fabs(value-Ma1freq[q][j])>maxfreq)   //exclude predictor
-{Mnss[q][j]=0;Mchis[q][j]=0;Mrhos[q][j]=0;count++;flag=0;}
+{Mnss[q][j]=0;Mchis[q][j]=0;Mrhos[q][j]=0;Ma1freq[q][j]=-9999;count++;flag=0;}
 else    //keep predictor
 {flag=1;}
 }
 
 if(q==0)    //save and measure overall similarity
 {
-if(flag==-1){fprintf(output2, "%s %c %c %.6f %.6f %.6f NA\n", preds[j], al1[j], al2[j], value, Ma1freq[q][j], fabs(value-Ma1freq[q][j]));}
-if(flag==0){fprintf(output2, "%s %c %c %.6f %.6f %.6f 0\n", preds[j], al1[j], al2[j], value, Ma1freq[q][j], fabs(value-Ma1freq[q][j]));}
-if(flag==1){fprintf(output2, "%s %c %c %.6f %.6f %.6f 1\n", preds[j], al1[j], al2[j], value, Ma1freq[q][j], fabs(value-Ma1freq[q][j]));}
+if(flag==-1){fprintf(output2, "%s %c %c %.6f %.6f %.6f NA\n", preds[j], al1[j], al2[j], value, value3, fabs(value-value3));}
+if(flag==0){fprintf(output2, "%s %c %c %.6f %.6f %.6f 0\n", preds[j], al1[j], al2[j], value, value3, fabs(value-value3));}
+if(flag==1){fprintf(output2, "%s %c %c %.6f %.6f %.6f 1\n", preds[j], al1[j], al2[j], value, value3, fabs(value-value3));}
 
-sum2+=fabs(value-Ma1freq[q][j]);
-if(fabs(value-Ma1freq[q][j])>value2){value2=fabs(value-Ma1freq[q][j]);}
+sum2+=fabs(value-value3);
+if(fabs(value-value3)>value2){value2=fabs(value-value3);}
 count2++;
 }
 }}

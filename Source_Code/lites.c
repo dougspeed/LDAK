@@ -26,6 +26,8 @@ if(dougvar==8){printf("purity filter\n");}
 if(dougvar==9){printf("no blank\n");}
 if(dougvar==10){printf("dopnt scale second\n");}
 
+if(dougvar==11){printf("extra summary stats then exit\n");}
+
 
 if(dougvar2!=-9999){printf("scaling is %f\n", dougvar2);}
 
@@ -658,9 +660,9 @@ if(noscale==1){printf("The best-fitting power is %.2f\n\n", power);}
 else    //scale focal, then secondary statistics
 {
 sscale=stats[1+best*12];
-printf("The best-fitting value is %.2f, while the estimated inflation is %f\n\n", power, sscale);
-if(sscale<0.8){printf("Warning, the scaling is very low, so has been increased to 0.8\n\n");sscale=0.8;}
-if(sscale>8){printf("Warning, the scaling is high low, so has been reduced to 8\n\n");sscale=8;}
+printf("The best-fitting value is %.2f, while the estimated inflation is %f\n", power, sscale);
+if(sscale<0.8){printf("Warning, the scaling is very low, so has been increased to 0.8\n");sscale=0.8;}
+if(sscale>8){printf("Warning, the scaling is very high, so has been reduced to 8\n");sscale=8;}
 
 if(dougvar2!=-9999){sscale=dougvar2;}
 
@@ -723,6 +725,8 @@ sscale2=stats[1];
 if(sscale2<0.8){printf("Warning, the scaling is very low, so has been increased to 0.8\n\n");sscale2=0.8;}
 if(sscale2>8){printf("Warning, the scaling is high low, so has been reduced to 8\n\n");sscale2=8;}
 
+printf("The test statistics in %s have estimated inflation %.2f\n", sumstems[q], sscale2);
+
 value=pow(sscale2,-1);
 for(j=0;j<data_length;j++)
 {
@@ -737,6 +741,7 @@ else{Mrhos[q][j]=-pow(Mchis[q][j]/(Mchis[q][j]+Mnss[q][j]),.5);}
 
 free(rjksums3);
 }
+printf("\n");
 }
 
 free(rjksums2);free(snss);free(schis);free(stats);free(likes);
@@ -1029,18 +1034,58 @@ if(num_focals==1){sprintf(filename2,"%s.imputed",outfile);}
 else{sprintf(filename2,"%s.focal%d.imputed", outfile, cur_focal+1);}
 if((output2=fopen(filename2,"w"))==NULL)
 {printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
-fprintf(output2, "Predictor\tA1\tA2\tZ\tn\n");
+fprintf(output2, "Predictor\tA1\tA2\tZ\tn\tA1Freq\tIMPUTED\n");
 
 for(j=0;j<data_length;j++)
 {
 if(nss[j]>0)
 {
-if(rhos[j]>0){value=pow(Mchis[0][j],.5);}
-else{value=-pow(Mchis[0][j],.5);}
-fprintf(output2,"%s\t%c\t%c\t%.4f\t%.0f\n", preds[j], al1[j], al2[j], value, Mnss[0][j]);
+if(rhos[j]>0){value=pow(chis[j],.5);}
+else{value=-pow(chis[j],.5);}
+
+if(a1freq[j]!=-9999)    //original
+{fprintf(output2,"%s\t%c\t%c\t%.4f\t%.0f\t%.6f\tNO\n", preds[j], al1[j], al2[j], value, nss[j], a1freq[j]);}
+else    //imputed
+{fprintf(output2,"%s\t%c\t%c\t%.4f\t%.0f\t%.6f\tYES\n", preds[j], al1[j], al2[j], value, nss[j], centres[j]/2);}
 }
 }
 fclose(output2);
+
+if(dougvar==11)
+{
+if(num_focals==1){sprintf(filename2,"%s.sum",outfile);}
+else{sprintf(filename2,"%s.focal%d.sum", outfile, cur_focal+1);}
+if((output2=fopen(filename2,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
+fprintf(output2, "Predictor\tA1\tA2\tBETA\tP\n");
+
+for(j=0;j<data_length;j++)
+{
+if(nss[j]>0)
+{fprintf(output2,"%s\t%c\t%c\t%.4e\t%.4e\n", preds[j], al1[j], al2[j], rhos[j], erfc(pow(chis[j],.5)*M_SQRT1_2));}
+}
+fclose(output2);
+
+if(num_focals==1){sprintf(filename2,"%s.ma",outfile);}
+else{sprintf(filename2,"%s.focal%d.sum", outfile, cur_focal+1);}
+if((output2=fopen(filename2,"w"))==NULL)
+{printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
+fprintf(output2, "Predictor\tA1\tA2\tfreq\tb\tse\tp\tN\n");
+
+for(j=0;j<data_length;j++)
+{
+if(nss[j]>0)
+{
+if(a1freq[j]!=-9999)    //original
+{fprintf(output2,"%s\t%c\t%c\t%.6f\t%.4e\t%.4e\t%.4e\t%.0f\n", preds[j], al1[j], al2[j], a1freq[j], rhos[j], rhos[j]*pow(chis[j],-.5), erfc(pow(chis[j],.5)*M_SQRT1_2), nss[j]);}
+else    //imputed
+{fprintf(output2,"%s\t%c\t%c\t%.6f\t%.4e\t%.4e\t%.4e\t%.0f\n", preds[j], al1[j], al2[j], centres[j]/2, rhos[j], rhos[j]*pow(chis[j],-.5), erfc(pow(chis[j],.5)*M_SQRT1_2), nss[j]);}
+}
+}
+fclose(output2);
+
+exit(1);
+}
 
 ///////////////////////
 
