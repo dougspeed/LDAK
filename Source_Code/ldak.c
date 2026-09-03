@@ -78,7 +78,10 @@ Copyright 2026 Doug Speed.
 #include <zstd.h>
 #include <limits.h>
 #include <ctype.h>
+
+#if VQTL==1
 #include <cholmod.h>
+#endif
 
 //#include <emmintrin.h> // SSE2 header
 
