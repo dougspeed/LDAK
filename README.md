@@ -62,7 +62,7 @@ This can be followed with a list of arguments (e.g., `--bfile geno --calc-stats 
 Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using a command such as
 
 ```
-gcc -O3 -o ldak6.3 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz -fopenmp 
+gcc -O3 -o ldak6.3 ldak_nomkl.c libqsopt.linux.a -lblas -llapack -lm -lz -fopenmp -lzstd
 ```
 Sometimes it is necessary to add the option "-no-pie", while adding "-Wformat-overflow=0" reduces the warnings. 
 If succcessful, you should have created a file called ldak6.3, which you can then run by typing
@@ -75,15 +75,15 @@ Please note that this version of LDAK will likely be slower than the pre-compile
 # 4B - Compile a Mac version from source code:
 (note that if using Linux, you should instead follow the instructions in 4A)
 
-Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using one of the following two commands (note that the second command will compile a slightly reduced version of LDAK, that is unable to compute weightings)
+Please download and extract the file Source_Code.zip (available at the top of this page). If you open a terminal window, and navigate to the Source_Code folder, then you can hopefully compile LDAK using one of the following two commands (note that the second command will compile a slightly reduced version of LDAK, that is unable to compute LDAK weightings)
 
 ```
-gcc -O3 -o ldak6.3 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz
+gcc -O3 -o ldak6.3 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz -lzstd
 ```
 ```
-gcc -O3 -o ldak6.3 ldak_nomkl_noqsopt.c -lblas -llapack -lm -lz
+gcc -O3 -o ldak6.3 ldak_nomkl_noqsopt.c -lblas -llapack -lm -lz -lzstd
 ```
-If succcessful, you should have created a file called ldak6.3, which you can then run by typing
+If successful, you should have created a file called ldak6.3, which you can then run by typing
 ```
 chmod a+x ldak6.3
 ./ldak6.3
@@ -99,7 +99,7 @@ I then compile LDAK using the commands
 
 ```
 source intel/oneapi/setvars.sh
-gcc --static -static-libgcc -O3 -o ldak6.3.linux ldak/ldak_mkl.c ldak/libqsopt.linux.a -m64 -Wl,--start-group ${MKLROOT}/lib/libmkl_intel_lp64.a ${MKLROOT}/lib/libmkl_gnu_thread.a ${MKLROOT}/lib/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -lz -I${MKLROOT}/include -fopenmp
+gcc --static -static-libgcc -O3 -o ldak6.3.linux ldak/ldak_mkl.c ldak/libqsopt.linux.a -m64 -Wl,--start-group ${MKLROOT}/lib/libmkl_intel_lp64.a ${MKLROOT}/lib/libmkl_gnu_thread.a ${MKLROOT}/lib/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -lz -lzstd -I${MKLROOT}/include -fopenmp
 ```
 Note that the first command depends on where you installed oneAPI. Further, I generated the second command based on help from the Intel MKL Link Advisor (www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-link-line-advisor.html).
 
