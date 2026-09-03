@@ -1664,7 +1664,7 @@ if(duos!=0)	//duos analysis
 {
 #include "singleg.c"
 }
-#if VQTL==0
+#if VQTL==1
 if(drm!=0)	//drm analysis
 {
 #include "singleh.c"
