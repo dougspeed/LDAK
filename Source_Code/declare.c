@@ -605,6 +605,7 @@ int *plengths;
 int nclump;
 double *permlike;
 
+#if VQTL==1
 cholmod_common chol_c;
 cholmod_triplet *chol_T;
 cholmod_sparse *chol_A;
@@ -614,6 +615,7 @@ cholmod_dense *chol_S, *chol_S2;
 int *chol_Ti, *chol_Tj;
 double *chol_Tx, *chol_rhs, *chol_rhs2, *chol_sol, *chol_sol2;
 long long int predicted_nnz;
+#endif
 
 //tagging, sumher and bayes factors
 
