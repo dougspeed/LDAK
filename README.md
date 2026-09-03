@@ -81,7 +81,7 @@ Please download and extract the file Source_Code.zip (available at the top of th
 gcc -O3 -o ldak6.3 ldak_nomkl.c libqsopt.mac.a -lblas -llapack -lm -lz -lzstd
 ```
 ```
-gcc -O3 -o ldak6.3 ldak_nomkl_noqsopt.c -lblas -llapack -lm -lz -lzstd
+gcc -O3 -o ldak6.3 ldak_nomkl_noqsopt.c libzstd.mac.a -lblas -llapack -lm -lz
 ```
 If successful, you should have created a file called ldak6.3, which you can then run by typing
 ```
