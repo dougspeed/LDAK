@@ -107,10 +107,10 @@ if(Z[j]>value){best=j;value=Z[j];value2=Z2[j];}
 }
 
 free(Z);free(Z2);free(ZTZ);free(ZTZ2);free(ZTdata);
+}
 
 //will stop if not significant
 if(value<value5){break;}
-}
 
 //so the most significant predictor is best, which has test statistic value and effect size value2
 fprintf(output3,"%s %d %.0f %.4e %.4e\n", preds[bitstart+best], chr[bitstart+best], bp[bitstart+best], erfc(pow(value,.5)*M_SQRT1_2), erfc(pow(chis[bitstart+best],.5)*M_SQRT1_2));

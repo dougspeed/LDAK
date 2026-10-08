@@ -1835,6 +1835,11 @@ frac4=value4/(value+value2+value3+value4);
 postmean=frac2*mean2+frac3*mean3+frac4*mean4;
 postvar=frac2*(var2+pow(mean2,2))+frac3*(var3+pow(mean3,2))+frac4*(var4+pow(mean4,2))-pow(postmean,2);
 
+if(postmean!=postmean||isinf(postmean))
+{
+printf("means %e %e %e, vars %e %e %e frac %e %e %e %e\n", mean2, mean3, mean4, var2, var3, var4, frac, frac2, frac3, frac4);
+}
+
 if(pen!=NULL)
 {
 *pen+=.5*dsq*postvar/resvar;
@@ -1974,9 +1979,11 @@ if(prob!=NULL){*prob=frac+frac2;}
 if(pvar!=NULL){*pvar+=postvar;}
 }
 
+if(postmean!=postmean||isinf(postmean)){printf("Warning, postmean is nan, please tell Doug - sum %f lam %e lam2 %e lam3 %e lam4 %e dsq %f resvar %f pp %f pp2 %f pp3 %f pp4 %f type %d\n", sum, lam, lam2, lam3, lam4, dsq, resvar, pp, pp2, pp3, pp4, type);exit(1);}
+
 if(pen!=NULL)
 {
-if(*pen!=*pen||isinf(*pen)){printf("Warning, pen is nan, please tell Doug - sum %f lam %e lam2 %e lam3 %e lam4 %e dsq %f resvar %f pp %f pp2 %f pp3 %f pp4 %f type %d\n", sum, lam, lam2, lam3, lam4, dsq, resvar, pp, pp2, pp3, pp4, type);}
+if(*pen!=*pen||isinf(*pen)){printf("Warning, pen is nan, please tell Doug - sum %f lam %e lam2 %e lam3 %e lam4 %e dsq %f resvar %f pp %f pp2 %f pp3 %f pp4 %f type %d\n", sum, lam, lam2, lam3, lam4, dsq, resvar, pp, pp2, pp3, pp4, type);exit(1);}
 }
 
 return(postmean);

@@ -461,6 +461,13 @@ if(fread(highlds+j, sizeof(int), 1, input2)!=1)
 
 fclose(input2);
 
+//set gotld
+sum=0;for(j=0;j<data_length;j++){sum+=rjksums[j];}
+mean=sum/data_length;
+gotld=(mean>1.1);
+printf("mean %f gotld %d\n", mean, gotld);
+if(gotld==0){printf("Warning, the average LD score is very low (%.2f), suggesting the correlations are computed using fake data\n\n", mean);}
+
 ////////
 
 //work out number of blocks and their boundaries
@@ -613,7 +620,7 @@ ssums=malloc(sizeof(double*));
 svars[0]=malloc(sizeof(double)*data_length);
 ssums[0]=malloc(sizeof(double)*3);
 
-if(noscale==0){printf("Testing five values for the power parameter (-1, -0.75, -0.5, -0.25 and 0), and estimating the inflation of test statistics\n");}
+if(noscale==0&&gotld==1){printf("Testing five values for the power parameter (-1, -0.75, -0.5, -0.25 and 0), and estimating the inflation of test statistics\n");}
 else{printf("Testing five values for the power parameter (-1, -0.75, -0.5, -0.25 and 0)\n");}
 
 for(k=0;k<num_pows;k++)	//solve for kth power and extract likelihood - have not yet imputed, so might be missing values
@@ -636,7 +643,7 @@ count++;
 }
 }
 
-if(noscale==0){solve_sums(stats+k*12, likes+k*11, NULL, NULL, NULL, 1, 1, 0, -9999, count, 0, NULL, NULL, rjksums2, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);}
+if(noscale==0&&gotld==1){solve_sums(stats+k*12, likes+k*11, NULL, NULL, NULL, 1, 1, 0, -9999, count, 0, NULL, NULL, rjksums2, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);}
 else{solve_sums(stats+k*12, likes+k*11, NULL, NULL, NULL, 1, 0, 0, -9999, count, 0, NULL, NULL, rjksums2, svars, ssums, snss, schis, 0.001, 100, 1, 7, NULL);}
 }
 
@@ -656,11 +663,10 @@ if(powers[k]==power){best=k;break;}
 }
 power=powers[best];
 
-if(noscale==1){printf("The best-fitting power is %.2f\n\n", power);}
-else    //scale focal, then secondary statistics
+if(noscale==0&&gotld==1)    //scale focal, then secondary statistics
 {
 sscale=stats[1+best*12];
-printf("The best-fitting value is %.2f, while the estimated inflation is %f\n", power, sscale);
+printf("The best-fitting value is %.2f, while the estimated inflation is %.2f\n", power, sscale);
 if(sscale<0.8){printf("Warning, the scaling is very low, so has been increased to 0.8\n");sscale=0.8;}
 if(sscale>8){printf("Warning, the scaling is very high, so has been reduced to 8\n");sscale=8;}
 
@@ -699,7 +705,7 @@ if(fread(rjksums3+Dkp2[s][j]+s*data_length, sizeof(double), 1, input2)!=1)
 fclose(input2);
 }
 
-//estimate scaling and scale
+//estimate scaling and scale (for simplicity, use LD scores from target correlations)
 for(q=1;q<num_sums3;q++)
 {
 //values of ssums do not matter as only care about scaling
@@ -725,7 +731,7 @@ sscale2=stats[1];
 if(sscale2<0.8){printf("Warning, the scaling is very low, so has been increased to 0.8\n\n");sscale2=0.8;}
 if(sscale2>8){printf("Warning, the scaling is high low, so has been reduced to 8\n\n");sscale2=8;}
 
-printf("The test statistics in %s have estimated inflation %.2f\n", sumstems[q], sscale2);
+if(q<num_sums1){printf("The test statistics in %s have estimated inflation %.2f\n", sumstems[q], sscale2);}
 
 value=pow(sscale2,-1);
 for(j=0;j<data_length;j++)
@@ -743,6 +749,7 @@ free(rjksums3);
 }
 printf("\n");
 }
+else{printf("The best-fitting power is %.2f\n\n", power);}
 
 free(rjksums2);free(snss);free(schis);free(stats);free(likes);
 free(svars[0]);free(svars);free(ssums[0]);free(ssums);
@@ -1022,8 +1029,8 @@ if(impsums==1)  //impute missing summary statistic for focal trait (if necessary
 count=0;for(j=0;j<data_length;j++){count+=(nss[j]==0);}
 if(count>0)
 {
-if(num_sums3==1){printf("Imputing summary statistics for (up to) %d predictors\n", count);}
-else{printf("Imputing summary statistics for (up to) %d predictors for focal trait (%s)\n", count, sumstems[0]);}
+if(num_sums3==1){printf("Imputing summary statistics for %d predictors\n", count);}
+else{printf("Imputing summary statistics for %d predictors for focal trait (%s)\n", count, sumstems[0]);}
 
 if(metasum==0){impute_sums(0, Mnss, Mrhos, Mchis, data_length, bittotal, blockstarts, blockends, sumpops[0], NULL, corstems, -9999, Dindexes, Dsizes, Duse, Duse2, Dsigns, shrink, outfile, cors_short, cors, preds);}
 else{impute_sums(0, Mnss, Mrhos, Mchis, data_length, bittotal, blockstarts, blockends, sumpops[0], cohers2, corstems, num_cors, Dindexes, Dsizes, Duse, Duse2, Dsigns, shrink, outfile, cors_short, cors, preds);}

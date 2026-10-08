@@ -1581,7 +1581,7 @@ if(cvar!=-9999&&mode!=150)
 //individual-level data prediction, then megaprs
 
 if(strcmp(indhers,"blank")&&gigaprs==1)
-{printf("Error, you can not use \"--ind-hers\" with \"--giga-prs\"\n\n");}
+{printf("Error, you can not use \"--ind-hers\" with \"--giga-prs\"\n\n");exit(1);}
 
 if(strcmp(indhers,"blank")!=0&&mode!=151&&mode!=152&&mode!=153&&mode!=154&&mode!=159)
 {printf("Error, you can only use \"--ind-hers\" with \"--ridge\", \"--bolt\", \"--bayesr\", \"--elastic\" or \"--mega-prs\"\n\n");exit(1);}
@@ -1865,8 +1865,11 @@ if(ptype!=-9999&&mode!=159)
 if(ptype!=-9999&&finemap==1)
 {printf("Error, you can not use \"--model\" with \"--fine-map YES\"\n\n");exit(1);}
 
+if(strcmp(bestfile,"blank")!=0&&gigaprs==1)
+{printf("Error, you can not use \"--best-model\" with \"--giga-prs\" \n\n");exit(1);}
+
 if(strcmp(bestfile,"blank")!=0&&mode!=159)
-{printf("Error, you can only use \"--best-model\" with \"--mega-prs\" or \"--giga-prs\"\n\n");exit(1);}
+{printf("Error, you can only use \"--best-model\" with \"--mega-prs\" \n\n");exit(1);}
 
 if(strcmp(bestfile,"blank")!=0&&ptype!=-9999)
 {printf("Error, you can not use \"--best-model\" with \"--model\"\n\n");exit(1);}

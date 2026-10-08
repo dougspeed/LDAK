@@ -658,7 +658,7 @@ int *dindex, *dindex2;
 double *ddata, *dcentres, *dmults, *dsqdevs, *drates, *dinfos;
 
 int maxpairs, num_rels, *firsts, *seconds;
-double *relats, *cX, *cX2, *cR, *toprats, *botrats;
+double *relats, *cX, *cR, *toprats, *botrats;
 
 double *lambdas, *lambdas2, *lambdas3, *lambdas4;
 double *cgammas, *csds, *ceffs;
@@ -679,14 +679,12 @@ int *blockstarts, *blockends;
 int *highlds;
 double *rjksums, *rjksums2, *rjksums3, *rjkaves, *rjktemp;
 double *randnorms, *datarands, *subrhos, *restrhos;
-double *mafs;
 
-int num_cors;
+int num_cors, gotld;
 char **corstems;
 
 int *trytypes;
 double *trylams, *tryscales, *tryps, *tryp2s, *tryp3s, *tryp4s, *tryf2s;
-int Lbit;
 double sscale, sscale2, escale;
 double *vargrid, *gridmaxes, *gridsums;
 double *ess, *ess2, *variances, rhosinvrhos;
@@ -765,7 +763,7 @@ FILE **Minput;
 //generic working variables
 
 size_t scount, scount2, smax;
-int i, i2, i3, j, j2, j3, k, k2, g, m, m2, m3, p, p2, q, q2, q3, r, s, s2, s3, count, count2, count3, count4, count5, count6;
+int i, i2, i3, j, j2, j3, k, k2, g, m, m2, m3, p, p2, q, q2, q3, r, s, s2, s3, count, count2, count3, count4, count5;
 int current, head, found, total, total2, total3, token, token2, indcount, ecount, wcount, xcount, *ycounts;
 int shuffle, start, end, best, mark, mark2, mark3, gen, gen2, *gens, flag, flag2, cflag, dflag, eflag, hflag, pflag, *order, *order2, cols[6];
 double sum, sum2, sum3, sumsq, sumsq2, sumsq3, sumsq4, mean, mean2, mean3, var, var2, var3, value, value2, value3, value4, value5, value6;

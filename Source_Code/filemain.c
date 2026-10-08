@@ -1156,7 +1156,7 @@ count2=find_strings(preds, length, gotpreds, found, indexer, indexer2, NULL, bul
 //blank stats
 for(q=0;q<num_sums;q++)
 {
-for(j=0;j<length;j++){Mnss[q][j]=0;Mchis[q][j]=0;Mrhos[q][j]=0;Ma1freq[q][j]=0;}
+for(j=0;j<length;j++){Mnss[q][j]=0;Mchis[q][j]=0;Mrhos[q][j]=0;Ma1freq[q][j]=-9999;}
 }
 
 //load up
@@ -3943,7 +3943,7 @@ return(total);
 
 void read_betas(char *betafile, double *effs, int num_phenos, int length, char **preds, char *al1, char *al2, char *bimfile)
 {
-int j, m, count, count2, found;
+int j, m, count, count2;
 int *indexer;
 double value;
 
@@ -3986,7 +3986,6 @@ for(j=0;j<1+m*count;j++)
 readchar=0;while(readchar!=10){readchar=10;(void)fscanf(input, "%c", &readchar);}
 }
 
-found=0;
 for(j=0;j<count;j++)
 {
 //read row

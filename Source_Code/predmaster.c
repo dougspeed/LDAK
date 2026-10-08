@@ -345,7 +345,7 @@ else
 if(verbose==1)
 {
 sprintf(filename,"%s.structure",outfile);
-if((output=fopen(filename,"a"))==NULL)
+if((output=fopen(filename,"w"))==NULL)
 {printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename);exit(1);}
 fprintf(output,"Not Tested\n");
 fclose(output);

@@ -488,11 +488,12 @@ for(j=1;j<data_length;j++){if(j<3){printf(" | %s %.3f %.1f", preds[j], chis[j], 
 printf("\n");
 
 max=0;for(j=0;j<data_length;j++){max+=(nss[j]>max)*(nss[j]-max);}
-count=0;for(j=0;j<data_length;j++){count+=(nss[j]>0&&nss[j]<0.5*max);}
+count=0;for(j=0;j<data_length;j++){count+=(nss[j]>0);}
+count2=0;for(j=0;j<data_length;j++){count2+=(nss[j]<0.5*max);}
 sum=0;for(j=0;j<data_length;j++){sum+=nss[j];}
-mean=sum/data_length;
+mean=sum/count;
 printf("The maximum (average) sample size is %.0f (%.1f)\n", max, mean);
-if(count>0){printf("Warning, %d predictors have sample size less than half the maximum (%.1f)\n", count, 0.5*max);}
+if(count2>count){printf("Warning, %d predictors have sample size less than half the maximum (%.1f)\n", count2-count, 0.5*max);}
 printf("\n");
 
 if(mode==158)	//can squeeze down predictors missing summary statistics

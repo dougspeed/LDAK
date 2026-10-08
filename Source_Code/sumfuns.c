@@ -1600,7 +1600,7 @@ fclose(output);
 }
 }
 
-if(stats2!=NULL) //get stats for genetic separation 
+if(stats2[0]!=-9999) //get stats for genetic separation 
 {
 prev=stats2[0], prev2=stats2[1], ascer=stats2[2], ascer2=stats2[3];
 
@@ -1647,7 +1647,7 @@ free(sW);free(sX);free(sY);free(sXTX);free(sXTX2);free(sXTY);free(sXTXs);free(sX
 
 //////////////////////////
 
-void solve_sums_lite(double *sigma, double *omega, double *rjksums2, double *rjksums3, double *nss, double *chis, int length, int type, int q)
+void solve_sums_lite(double *sigma, double *omega, double *rjksums2, double *rjksums3, double *nss, double *chis, int length, int type)
 //type=0 - fix intercept to one; type=1 - estimate intercept; type=2 - fix intercept to current value
 {
 int j, count;
@@ -1712,8 +1712,6 @@ if(sXTX2[0]>0){sd=pow(var*sXTX2[0],.5);}
 else{sd=100;}
 if(sXTX2[3]>0){sd2=pow(var*sXTX2[3],.5)/scale;}
 else{sd2=100;}
-
-//printf("trait %d int is %f (%f), slope is %f (%f)\n", q+1, est, sd, est2, sd2);
 
 if(sd<.2&&sd2<.2)   //estimates seem ok, will use
 {
@@ -1788,7 +1786,7 @@ free(stags);free(svars);free(snss);free(schis);
 
 ////////
 
-void solve_cors_lite(double *sigma, double *omega, double *rjksums2a, double *rjksums2b, double *rjksums3, double *nss, double *nss2, double *chis, double *chis2, double *rhos, double *rhos2, int length, int type, int q, int q2)
+void solve_cors_lite(double *sigma, double *omega, double *rjksums2a, double *rjksums2b, double *rjksums3, double *nss, double *nss2, double *chis, double *chis2, double *rhos, double *rhos2, int length, int type)
 //type=0 - fix intercept to one; type=1 - estimate intercept; type=2 - fix intercept to current value
 {
 int j, count;
@@ -1853,8 +1851,6 @@ if(sXTX2[0]>0){sd=pow(var*sXTX2[0],.5);}
 else{sd=100;}
 if(sXTX2[3]>0){sd2=pow(var*sXTX2[3],.5)/scale;}
 else{sd2=100;}
-
-//printf("traits %d and %d int is %f (%f), slope is %f (%f)\n", q+1, q2+1, est, sd, est2, sd2);
 
 if(sd<.2&&sd2<.2)   //estimates seem ok, will use
 {

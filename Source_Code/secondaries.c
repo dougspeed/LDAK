@@ -192,9 +192,9 @@ printf("Computing omega and sigma, the MTAG covariance matrices\n");
 for(q=0;q<num_sums3;q++)
 {
 if(mtagcopy==0) //fix intercept at one, estimate slope
-{solve_sums_lite(sigma+q+q*num_sums3, omega+q+q*num_sums3, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[q]+sumpops[q]*num_cors)*data_length, Mnss[q], Mchis[q], data_length, 0, q);}
+{solve_sums_lite(sigma+q+q*num_sums3, omega+q+q*num_sums3, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[q]+sumpops[q]*num_cors)*data_length, Mnss[q], Mchis[q], data_length, 0);}
 else    //estimate intercept and slope
-{solve_sums_lite(sigma+q+q*num_sums3, omega+q+q*num_sums3, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[q]+sumpops[q]*num_cors)*data_length, Mnss[q], Mchis[q], data_length, 1, q);}
+{solve_sums_lite(sigma+q+q*num_sums3, omega+q+q*num_sums3, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[q]+sumpops[q]*num_cors)*data_length, Mnss[q], Mchis[q], data_length, 1);}
 
 if(sigma[q+q*num_sums3]<0.5)
 {
@@ -215,9 +215,9 @@ if(omega[q+q*num_sums3]>0.8)
 for(q=1;q<num_sums3;q++)
 {
 if(sumpops[0]==sumpops[q])  //estimate intercept and slope
-{solve_cors_lite(sigma+q, omega+q, rjksums2+sumpops[0]*data_length, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[0]+sumpops[q]*num_cors)*data_length, Mnss[0], Mnss[q], Mchis[0], Mchis[q], Mrhos[0], Mrhos[q], data_length, 1, 0, q);}
+{solve_cors_lite(sigma+q, omega+q, rjksums2+sumpops[0]*data_length, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[0]+sumpops[q]*num_cors)*data_length, Mnss[0], Mnss[q], Mchis[0], Mchis[q], Mrhos[0], Mrhos[q], data_length, 1);}
 else //fix intercept at zero, estimate slope
-{solve_cors_lite(sigma+q, omega+q, rjksums2+sumpops[0]*data_length, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[0]+sumpops[q]*num_cors)*data_length, Mnss[0], Mnss[q], Mchis[0], Mchis[q], Mrhos[0], Mrhos[q], data_length, 0, 0, q);}
+{solve_cors_lite(sigma+q, omega+q, rjksums2+sumpops[0]*data_length, rjksums2+sumpops[q]*data_length, rjksums3+(sumpops[0]+sumpops[q]*num_cors)*data_length, Mnss[0], Mnss[q], Mchis[0], Mchis[q], Mrhos[0], Mrhos[q], data_length, 0);}
 
 if(sigma[q]>0.99)
 {
@@ -283,9 +283,9 @@ for(q2=q+1;q2<num_sums3;q2++)
 if(pritraits[q2]!=2)
 {
 if(sumpops[q]==sumpops[q2])    //estimate intercept and slope
-{solve_cors_lite(sigma+q+q2*num_sums3, omega+q+q2*num_sums3, rjksums2+sumpops[q]*data_length, rjksums2+sumpops[q2]*data_length, rjksums3+(sumpops[q]+sumpops[q2]*num_cors)*data_length, Mnss[q], Mnss[q2], Mchis[q], Mchis[q2], Mrhos[q], Mrhos[q2], data_length, 1, q, q2);}
+{solve_cors_lite(sigma+q+q2*num_sums3, omega+q+q2*num_sums3, rjksums2+sumpops[q]*data_length, rjksums2+sumpops[q2]*data_length, rjksums3+(sumpops[q]+sumpops[q2]*num_cors)*data_length, Mnss[q], Mnss[q2], Mchis[q], Mchis[q2], Mrhos[q], Mrhos[q2], data_length, 1);}
 else //fix intercept at zero, estimate slope
-{solve_cors_lite(sigma+q+q2*num_sums3, omega+q+q2*num_sums3, rjksums2+sumpops[q]*data_length, rjksums2+sumpops[q2]*data_length, rjksums3+(sumpops[q]+sumpops[q2]*num_cors)*data_length, Mnss[q], Mnss[q2], Mchis[q], Mchis[q2], Mrhos[q], Mrhos[q2], data_length, 0, q, q2);}
+{solve_cors_lite(sigma+q+q2*num_sums3, omega+q+q2*num_sums3, rjksums2+sumpops[q]*data_length, rjksums2+sumpops[q2]*data_length, rjksums3+(sumpops[q]+sumpops[q2]*num_cors)*data_length, Mnss[q], Mnss[q2], Mchis[q], Mchis[q2], Mrhos[q], Mrhos[q2], data_length, 0);}
 
 if(sigma[q+q2*num_sums3]>0.99)
 {
@@ -474,7 +474,7 @@ for(q=0;q<num_sums3;q++)
 {
 if(pritraits[q]==1)
 {
-solve_sums_lite(sigma+q+q*num_sums3, omega+q+q*num_sums3, rjksums2+sumpops[q]*data_length+bitstart, rjksums3+(sumpops[q]+sumpops[q]*num_cors)*data_length+bitstart, Mnss[q]+bitstart, Mchis[q]+bitstart, bitlength, 2, q);
+solve_sums_lite(sigma+q+q*num_sums3, omega+q+q*num_sums3, rjksums2+sumpops[q]*data_length+bitstart, rjksums3+(sumpops[q]+sumpops[q]*num_cors)*data_length+bitstart, Mnss[q]+bitstart, Mchis[q]+bitstart, bitlength, 2);
 if(omega[q+q*num_sums3]<=0){omega[q+q*num_sums3]=1e-10;}
 }}
 
@@ -487,7 +487,7 @@ for(q2=q+1;q2<num_sums3;q2++)
 {
 if(pritraits[q2]==1)
 {
-solve_cors_lite(sigma+q+q2*num_sums3, omega+q+q2*num_sums3, rjksums2+sumpops[q]*data_length+bitstart, rjksums2+sumpops[q2]*data_length+bitstart, rjksums3+(sumpops[q]+sumpops[q2]*num_cors)*data_length+bitstart, Mnss[q]+bitstart, Mnss[q2]+bitstart, Mchis[q]+bitstart, Mchis[q2]+bitstart, Mrhos[q]+bitstart, Mrhos[q2]+bitstart, bitlength, 2, q, q2);
+solve_cors_lite(sigma+q+q2*num_sums3, omega+q+q2*num_sums3, rjksums2+sumpops[q]*data_length+bitstart, rjksums2+sumpops[q2]*data_length+bitstart, rjksums3+(sumpops[q]+sumpops[q2]*num_cors)*data_length+bitstart, Mnss[q]+bitstart, Mnss[q2]+bitstart, Mchis[q]+bitstart, Mchis[q2]+bitstart, Mrhos[q]+bitstart, Mrhos[q2]+bitstart, bitlength, 2);
 
 value=omega[q+q2*num_sums3]*pow(omega[q+q*num_sums3]*omega[q2+q2*num_sums3],-.5);
 if(value>0.99){omega[q+q2*num_sums3]=0.99*pow(omega[q+q*num_sums3]*omega[q2+q2*num_sums3],.5);}
@@ -580,14 +580,14 @@ for(q=0;q<num_sums3;q++){rhos4[j]+=comat3[q]/sum*Mrhos[q][j];}
 nss4[j]=sum;
 chis4[j]=nss4[j]*pow(rhos4[j],2)/(1-pow(rhos4[j],2));
 
-//add on contributions to cohers - be careful for focal trait when using metasum
-if(metasum==0){cohers[sumpops[0]+bit*num_cors]+=comat3[0]/sum;}
+//add on contributions to cohers (absolute weights) - be careful for focal trait when using metasum
+if(metasum==0){cohers[sumpops[0]+bit*num_cors]+=fabs(comat3[0])/sum;}
 else
 {
-for(s=0;s<num_cors;s++){cohers[s+bit*num_cors]+=cohers2[s]*comat3[0]/sum;}
+for(s=0;s<num_cors;s++){cohers[s+bit*num_cors]+=cohers2[s]*fabs(comat3[0])/sum;}
 }
 
-for(q=1;q<num_sums3;q++){cohers[sumpops[q]+bit*num_cors]+=comat3[q]/sum;}
+for(q=1;q<num_sums3;q++){cohers[sumpops[q]+bit*num_cors]+=fabs(comat3[q])/sum;}
 }
 
 //scale cohers so it sums to one

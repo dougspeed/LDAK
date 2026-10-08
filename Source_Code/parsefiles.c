@@ -1099,8 +1099,8 @@ else{printf("Error, only %d of the %d summary statistics contain a column named 
 exit(1);
 }
 
-count=0;for(q=1;q<num_sums1;q++){count+=(pritraits2[q]==0);}
-count2=0;for(q=1;q<num_sums1;q++){count2+=(pritraits2[q]==1);}
+count=0;for(q=0;q<num_sums1;q++){count+=(pritraits2[q]==1);}
+count2=0;for(q=0;q<num_sums1;q++){count2+=(pritraits2[q]==0);}
 printf("%s provides details for %d sets of summary statistics files (%d focal, %d primary and %d secondary)\n", sumslist, num_sums1, num_focals, count, count2);
 
 if(megasave==1&&num_focals>1)

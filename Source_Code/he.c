@@ -18,7 +18,7 @@ Copyright 2026 Doug Speed.
 void he_reg(int ns, int num_subs, int num_covars, int num_envs, int num_tops, int num_kins, int num_regs, int **subindex, double *Y, double *Z, float **Mkins_single, double *kintraces, double *kinsums, double *X, int Xtotal, int *Xstarts, int *Xends, double *Xsums, double prev, int np, int discenv, char *oversfile, double **ssums, int num_blocks, int memsave, char **kinstems, char **ids3, char *outfile, int type, double trun, double missingvalue)
 //type=0 - he, type=1 - pcgc
 {
-size_t scount, scounta, scountb, stotal, smark;
+size_t scounta, scountb, stotal, smark;
 int i, i2, j, k, k2, k3, p, p2, r, s, count, kcount, start, end, flag;
 double sum, sum2, sumsq, mean, mean2, var, value, factor;
 float *datatemp;

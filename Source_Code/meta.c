@@ -89,7 +89,7 @@ sprintf(filename2,"%s.meta",outfile);
 if((output2=fopen(filename2,"w"))==NULL)
 {printf("Error writing to %s; check you have permission to write and that there does not exist a folder with this name\n\n",filename2);exit(1);}
 
-if(flag==1){fprintf(output2,"Predictor\tA1\tA2\tZ\tn\tA1Freq\tP\n");}
+if(flag==1){fprintf(output2,"Predictor\tA1\tA2\tZ\tn\tP\tA1Freq\n");}
 else{fprintf(output2,"Predictor\tA1\tA2\tZ\tn\tP\n");}
 
 count=0;
@@ -107,7 +107,7 @@ sum+=Mnss[q][j];
 if(sum>0)
 {
 value2=pow(sum/(1-pow(value/sum,2)),.5)*value/sum;
-if(flag==1){fprintf(output2,"%s\t%c\t%c\t%.4f\t%0.f\t%.4f\t%.4e\n", preds[j], al1[j], al2[j], value2, sum, value3/sum, erfc(fabs(value2)*M_SQRT1_2));}
+if(flag==1){fprintf(output2,"%s\t%c\t%c\t%.4f\t%0.f\t%.4e\t%.4f\n", preds[j], al1[j], al2[j], value2, sum, erfc(fabs(value2)*M_SQRT1_2), value3/sum);}
 else{fprintf(output2,"%s\t%c\t%c\t%.4f\t%0.f\t%.4e\n", preds[j], al1[j], al2[j], value2, sum, erfc(fabs(value2)*M_SQRT1_2));}
 count++;
 }

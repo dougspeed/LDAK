@@ -55,6 +55,8 @@ STM[s]=0;
 count=0;
 for(j=0;j<data_length;j++)
 {
+if(nss[j]>0)
+{
 flag=1;
 for(s=0;s<num_cors;s++)
 {
@@ -67,6 +69,7 @@ dgemm_("T", "N", &num_cors, &num_cors, &one, &alpha, centres2+j, &data_length, c
 
 for(s=0;s<num_cors;s++){STM[s]+=centres2[j+s*data_length]*2*a1freq[j];}
 count++;
+}
 }
 }
 if(count==0){printf("Error, there are no predictors common to all correlations\n\n");exit(1);}
@@ -274,7 +277,7 @@ for(s=0;s<num_cors;s++)
 sum=0;count=0;
 for(j=0;j<data_length;j++)
 {
-if(Ma1freq[num_sums1][j]>0&&centres2[j+s*data_length]!=0)	//present in summary statistics and correlations
+if(Mnss[num_sums1][j]>0&&centres2[j+s*data_length]!=0)	//present in summary statistics and correlations
 {sum+=fabs(Ma1freq[num_sums1][j]-centres2[j+s*data_length]/2);count++;}
 }
 
@@ -317,7 +320,7 @@ if(checkfreq==1)
 count=0;
 for(j=0;j<data_length;j++)
 {
-if(Ma1freq[num_sums1][j]>0&&centres2[j+sumpops[num_sums1]*data_length]!=0)	//present in summary statistics and correlations
+if(Mnss[num_sums1][j]>0&&centres2[j+sumpops[num_sums1]*data_length]!=0)	//present in summary statistics and correlations
 {
 value=centres2[j+sumpops[num_sums1]*data_length]/2;
 if(fabs(value-Ma1freq[num_sums1][j])>maxfreq)   //exclude predictor
@@ -333,7 +336,7 @@ if(count>0){printf("Warning, %d of the predictors in %s are excluded due to freq
 count2=0;
 for(j=0;j<data_length;j++)
 {
-if(Ma1freq[num_sums1][j]>0&&centres2[j+sumpops[num_sums1]*data_length]==0)
+if(Mnss[num_sums1][j]>0&&centres2[j+sumpops[num_sums1]*data_length]==0)
 {
 for(q=num_sums1;q<num_sums3;q++){Mnss[q][j]=0;Mchis[q][j]=0;Mrhos[q][j]=0;count2++;}
 }

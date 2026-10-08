@@ -28,7 +28,7 @@ Copyright 2026 Doug Speed.
 */
 
 /*LINTLIBRARY*/
-static char sccsfid[] = "@(#) z.c 5.1 (|stat) 12/26/85";
+//static char sccsfid[] = "@(#) z.c 5.1 (|stat) 12/26/85";
 #include       <math.h>
 
 #define        Z_EPSILON      0.000001       /* accuracy of critz approximation */

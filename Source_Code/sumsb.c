@@ -297,7 +297,7 @@ else	//cross tagging
 {
 sprintf(filename,"%s.progress",outfile);
 stats2[0]=prev;stats2[1]=prev2;stats2[3]=ascer;stats2[4]=ascer2;
-solve_cors(stats, 1, gcon, cept, oversamp, num_blocks, count, stags, svars2, ssums2, snss, schis, srhos, snss2, schis2, srhos2, tol, maxiter, filename, 1, NULL);
+solve_cors(stats, 1, gcon, cept, oversamp, num_blocks, count, stags, svars2, ssums2, snss, schis, srhos, snss2, schis2, srhos2, tol, maxiter, filename, 1, stats2);
 
 //save
 sprintf(filename,"%s.cors",outfile);

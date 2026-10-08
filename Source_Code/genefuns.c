@@ -491,7 +491,7 @@ for(j2=0;j2<length;j2++)
 {
 if(retain[j2]==1){sum+=pow(cors[(size_t)j*length+j2],2);}
 }
-*var2+=pow(nss[j],2)/sum;
+*var2+=pow(rhos[j],2)/sum;
 }}
 }
 else{*var2=1;}
