@@ -18,10 +18,10 @@ Please note that the Linux LDAK executable is most regularly updated (by contras
 # 1A - Download the Linux executable:
 (note that if using a Mac, you should instead follow the instructions in 1B)
 
-If you plan to run LDAK on a Linux computer, please download the file ldak6.3.linux; you can either click on the name of the file at the top of this page, then find the download button, or you can use the following command
+If you plan to run LDAK on a Linux computer, please download the file ldak7.01.linux; you can either click on the name of the file at the top of this page, then find the download button, or you can use the following command
 
 ```
-wget https://github.com/dougspeed/LDAK/raw/main/ldak6.3.linux
+wget https://github.com/dougspeed/LDAK/raw/main/ldak7.01.linux
 ```
 You may have noticed there is also a beta Linux version of LDAK, but please only use this version if asked.
 
