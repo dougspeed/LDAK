@@ -1,6 +1,6 @@
 # October 2026 - LDAK 7 has a new naming system
 
-I am trying to improve version control for the Linux LDAK executable. I now plan to increase the version number EACH TIME I edit the executable (whereas previously, I would only do so for large changes). Specifically, the new LDAK executable will be called LDAK7.XX.linux, where XX increases by one each time I made a change.
+I am trying to improve version control for the Linux LDAK executable. I now plan to increase the version number EVERY TIME I edit the executable (whereas previously, I would only do so for large changes). Specifically, the new LDAK executable will be called LDAK7.XX.linux, where XX increases by one each time I made a change.
 
 
 # Welcome to the LDAK GitHub Pages
