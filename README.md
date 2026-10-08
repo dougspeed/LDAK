@@ -1,4 +1,4 @@
-# October 2026 - LDAK Linux executable has a new naming system
+# October 2026 - new executable naming system
 
 I am trying to improve version control for the Linux LDAK executable. I now plan to increase the version number EVERY TIME I change the executable (whereas previously, I would only do so for large changes). Specifically, the latest LDAK executable will be called LDAK7.XX.linux, where XX increases by one each time I made a change.
 
