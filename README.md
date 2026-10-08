@@ -1,3 +1,8 @@
+# October 2026 - LDAK 7 has a new naming system
+
+I am trying to improve version control for the Linux LDAK executable. I now plan to increase the version number EACH TIME I edit the executable (whereas previously, I would only do so for large changes). Specifically, the new LDAK executable will be called LDAK7.XX.linux, where XX increases by one each time I made a change.
+
+
 # Welcome to the LDAK GitHub Pages
 
 Please note that this page focuses on how to download LDAK; if you are instead looking for advice on how to run LDAK, please visit either www.ldak-kvik.com (for documentation related to LDAK-KVIK) or www.dougspeed.com (for documentation on all other features).
