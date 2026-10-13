@@ -1,0 +1,44 @@
+# script for performing a simulation study based on directly genotyped data in Our Future Health
+dir=data
+out=outcome
+n=755000
+m=659000
+
+# generate genotype and phenotype data
+/home/jasperh/gensubtypes/jasper/ldak6.3.linux --make-snps $dir/data --num-samples $n --num-snps $m
+/home/jasperh/gensubtypes/jasper/ldak6.3.linux --make-phenos $dir/pheno --bfile $dir/data --power -0.25 --her 0.3 --num-phenos 10 --num-causals 1000
+
+# run LDAK-KVIK
+for i in {1..10}; do
+/home/jasperh/gensubtypes/jasper/ldak6.3.linux --kvik-step1 ${out}/kvik_${i} --bfile $dir/data --pheno $dir/pheno$i --covar $dir/data.covar --max-threads 4
+/home/jasperh/gensubtypes/jasper/ldak6.3.linux --kvik-step2 ${out}/kvik_${i} --bfile $dir/data --pheno $dir/pheno$i --covar $dir/data.covar --max-threads 4
+done
+
+# run REGENIE
+for i in {1..10}; do
+regenie \
+  --step 1 \
+  --bed $dir/data_100_out \
+  --covarFile $dir/data.covar \
+  --phenoFile $dir/pheno.pheno \
+  --bsize 400 \
+  --qt --lowmem \
+  --lowmem-prefix ${out}/tmp_rg \
+  --threads \$SLURM_CPUS_PER_TASK \
+  --out ${out}/reg
+
+regenie \
+  --step 2 \
+  --bed $dir/data_100_out \
+  --covarFile $dir/data.covar \
+  --phenoFile $dir/pheno.pheno \
+  --bsize 200 \
+  --qt \
+  --pred ${out}/reg_pred.list \
+  --out ${out}/reg_regenie
+done
+
+# run linear
+for i in {1..10}; do
+/home/jasperh/gensubtypes/jasper/ldak6.3.linux --linear ${out}/linear_${i} --bfile $dir/data --pheno $dir/pheno$i --covar $dir/data.covar --max-threads 4
+done
