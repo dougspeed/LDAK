@@ -18,9 +18,9 @@ done
 for i in {1..10}; do
 regenie \
   --step 1 \
-  --bed $dir/data_100_out \
+  --bed $dir/data \
   --covarFile $dir/data.covar \
-  --phenoFile $dir/pheno.pheno \
+  --phenoFile $dir/pheno$i \
   --bsize 400 \
   --qt --lowmem \
   --lowmem-prefix ${out}/tmp_rg \
@@ -29,9 +29,9 @@ regenie \
 
 regenie \
   --step 2 \
-  --bed $dir/data_100_out \
+  --bed $dir/data \
   --covarFile $dir/data.covar \
-  --phenoFile $dir/pheno.pheno \
+  --phenoFile $dir/pheno$i \
   --bsize 200 \
   --qt \
   --pred ${out}/reg_pred.list \
